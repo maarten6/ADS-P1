@@ -10,7 +10,9 @@ namespace FVA
                 || !int.TryParse(Console.ReadLine(), out Utils.PTIMESECOND)
                 || !int.TryParse(Console.ReadLine(), out Utils.GAP)
                 )
+            {
                 throw new ArgumentException("Input was not in the correct format.");
+            }
 
             string line = Console.ReadLine();
 
