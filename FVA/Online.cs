@@ -15,10 +15,10 @@ namespace FVA
 
         private List<Hospital> hospitals;
 
-        public Online()
+        public Online(Patient firstpatient)
         {
-            patients = new List<Patient>();
-            hospitals = new List<Hospital> { new Hospital(0) };
+            patients = new List<Patient> { firstpatient };
+            hospitals = new List<Hospital> { new Hospital(0, firstpatient) };
 
             for (string line = Console.ReadLine(); line != "x"; line = Console.ReadLine())
             {

@@ -32,7 +32,7 @@ namespace FVA
             else
             {
                 Utils.DebugPrint("Solving the online problem.");
-                new Online();
+                new Online(new Patient(0, line));
             }
         }
     }
