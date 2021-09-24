@@ -48,15 +48,12 @@ namespace FVA
 
             int s = PTIMEFIRST + PTIMESECOND;
 
-            int startLastTimeSlot = patient.FirstDoseTo + GAP + patient.Delay;
-            int endLastTimeSlot = startLastTimeSlot + patient.SecondDoseInterval;
-
             List<TimeSlot> shotList = new List<TimeSlot>();
             //List<Tuple<int, int, int>> shot2list = new List<Tuple<int, int, int>>();
 
             foreach (Hospital hospital in hospitals)
             {
-                hospital.ExtendSchedule(endLastTimeSlot);
+                hospital.ExtendSchedule(patient);
 
                 hospital.GetSlots(shotList, Math.Min(PTIMEFIRST,PTIMESECOND));
             }
@@ -65,20 +62,19 @@ namespace FVA
             shotList.OrderBy(item => item.StartTime);
             int count = 0;
 
-            TimeSlot ts1 = null, ts2 = null;
+            TimeSlot ts1 = null, ts2 = null, temp = null;
             foreach (TimeSlot timeslot in shotList)
             {
-                ts1 = timeslot;
-                if (!ValidShot(ts1, patient.FirstDoseFrom, PTIMEFIRST)) 
+                if (!ValidShot(timeslot, patient.FirstDoseFrom, patient.FirstDoseTo, PTIMEFIRST, out ts1)) 
                     continue;
 
                 int startts2 = ts1.StartTime + PTIMEFIRST + GAP + patient.Delay;
 
                 ts2 = null;
                 foreach (TimeSlot ts2test in shotList)
-                    if (ValidShot(ts2test, startts2, PTIMESECOND))
+                    if (ValidShot(ts2test, startts2, startts2 + patient.SecondDoseInterval, PTIMESECOND, out temp))
                     {
-                        ts2 = ts2test;
+                        ts2 = temp;
                         break;
                     }
 
@@ -129,9 +125,15 @@ namespace FVA
                     
                 }*/
             }
-
-            hospitals[ts1.Hospital].Schedule(patient.ID, ts1.StartTime, ts1.StartTime + PTIMEFIRST);
-            hospitals[ts2.Hospital].Schedule(patient.ID, ts2.EndTime - PTIMESECOND, ts2.EndTime);
+            if (ts1 == null || ts2 == null)
+            {
+                hospitals.Add(new Hospital(hospitals.Count(), patient));
+            }
+            else
+            {
+                hospitals[ts1.Hospital].Schedule(patient.ID, ts1.StartTime, ts1.StartTime + PTIMEFIRST);
+                hospitals[ts2.Hospital].Schedule(patient.ID, ts2.EndTime - PTIMESECOND, ts2.EndTime);
+            }
 
 
             //1: 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
@@ -142,12 +144,19 @@ namespace FVA
         }
 
         // private bool ValidShot1(TimeSlot ts, Patient p) => ValidShot(ts, p.FirstDoseFrom, PTIMEFIRST);
-        private bool ValidShot(TimeSlot ts, int slotstart, int timespent)
+        private bool ValidShot(TimeSlot ts, int slotstart, int slotend, int timespent, out TimeSlot valid)
         {
-            // TODO: fix this stuff so it does what we want
-            bool len = ts.Length >= timespent;
-            bool tim = ts.EndTime - timespent >= slotstart;
-            return len && tim;
+            valid = null;
+            if (slotend < ts.StartTime || ts.EndTime < slotstart) return false;
+
+            for (int actualstart = ts.StartTime; actualstart <= slotend - timespent && actualstart <= ts.EndTime - timespent; ++actualstart)
+                if (actualstart >= slotstart)
+                {
+                    valid = new TimeSlot(ts.Hospital, actualstart, timespent);
+                    return true;
+                }
+
+            return false;
         }
         
         // 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
@@ -166,11 +175,29 @@ namespace FVA
             ID = id;
             schedule = new List<int>();
         }
-        
+        public Hospital(int id, Patient p)
+        {
+            // NOTE: this adds the patient in their first available slots, nothing smart here
+            ID = id;
+            schedule = new List<int>();
+
+            int startLastTimeSlot = p.FirstDoseTo + GAP + p.Delay;
+            int endLastTimeSlot = startLastTimeSlot + p.SecondDoseInterval;
+
+            ExtendSchedule(endLastTimeSlot);
+
+            for (int i = p.FirstDoseFrom; i < p.FirstDoseFrom + PTIMEFIRST; ++i)
+                schedule[i] = p.ID;
+
+            for (int i = startLastTimeSlot; i <endLastTimeSlot; ++i)
+                schedule[i] = p.ID;
+        }
+
         public void ExtendSchedule(int slot)
         {
             while (schedule.Count < slot) schedule.Add(0);
         }
+        public void ExtendSchedule(Patient patient) => ExtendSchedule(patient.FirstDoseTo + GAP + patient.Delay + patient.SecondDoseInterval);
 
         public void Schedule(int PatientID, int start, int end)
         {
