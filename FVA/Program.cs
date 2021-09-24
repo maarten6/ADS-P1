@@ -24,7 +24,7 @@ namespace FVA
                 Patient[] patients = new Patient[patientCnt];
 
                 for (int i = 0; i < patientCnt; ++i)
-                    patients[i] = new Patient(Console.ReadLine());
+                    patients[i] = new Patient(i, Console.ReadLine());
 
                 new Offline(patients);
 

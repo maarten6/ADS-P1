@@ -8,12 +8,13 @@ namespace FVA
 {
     public class Patient
     {
+        public int ID { get; private set; }
         public int FirstDoseFrom { get; private set; }
         public int FirstDoseTo { get; private set; }
         public int Delay { get; private set; }
         public int SecondDoseInterval { get; private set; }
 
-        public Patient(string line)
+        public Patient(int ID, string line)
         {
             string[] data = line.Split(',');
 
@@ -28,6 +29,7 @@ namespace FVA
             }
             else
             {
+                this.ID = ID + 1;
                 FirstDoseFrom = firstDoseFrom;
                 FirstDoseTo = firstDoseTo;
                 Delay = delay;

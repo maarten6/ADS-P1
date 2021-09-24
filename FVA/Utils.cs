@@ -8,7 +8,7 @@ namespace FVA
 {
     public static class Utils
     {
-        public const bool DEBUG = false;
+        public const bool DEBUG = true;
         // note that offline == !online
         public static bool OFFLINE;
         // processing time of the first dose
