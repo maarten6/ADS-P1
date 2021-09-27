@@ -189,7 +189,7 @@ namespace FVA
             for (int i = p.FirstDoseFrom; i < p.FirstDoseFrom + PTIMEFIRST; ++i)
                 schedule[i] = p.ID;
 
-            for (int i = startLastTimeSlot; i <endLastTimeSlot; ++i)
+            for (int i = endLastTimeSlot - PTIMESECOND; i <endLastTimeSlot; ++i)
                 schedule[i] = p.ID;
         }
 
@@ -221,7 +221,7 @@ namespace FVA
             for (int current = 0, start, length; current < schedule.Count; current += length)
             {
                 if (schedule[current] != 0)
-                    while (schedule[current++] != 0) ;
+                    while (current < schedule.Count  && schedule[current++] != 0) ;
 
                 start = current;
                 length = 1;
