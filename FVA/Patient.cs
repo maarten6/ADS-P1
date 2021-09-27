@@ -30,8 +30,8 @@ namespace FVA
             else
             {
                 this.ID = ID + 1;
-                FirstDoseFrom = firstDoseFrom;
-                FirstDoseTo = firstDoseTo;
+                FirstDoseFrom = firstDoseFrom - 1;
+                FirstDoseTo = firstDoseTo - 1;
                 Delay = delay;
                 SecondDoseInterval = secondDoseInterval;
             }
