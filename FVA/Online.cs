@@ -19,8 +19,9 @@ namespace FVA
         {
             patients = new List<Patient> { firstpatient };
             hospitals = new List<Hospital> { new Hospital(0) };
+            
 
-            Schedule(firstpatient);
+            StringBuilder output = Schedule(firstpatient, new StringBuilder());
 
             for (string line = Console.ReadLine(); line != "x"; line = Console.ReadLine())
             {
@@ -30,10 +31,12 @@ namespace FVA
 
                 patients.Add(cur);
 
-                DebugPrint("Scheduling a patient.");
-                Schedule(cur);
-                DebugPrint("Done scheduling a patient");
+                //DebugPrint("Scheduling a patient.");
+                output = Schedule(cur, output);
+                //DebugPrint("Done scheduling a patient");
             }
+
+            Console.WriteLine(output);
 
             // TODO: print all patient timeslots
             foreach (Hospital h in hospitals)
@@ -60,7 +63,7 @@ namespace FVA
             return (x % PTIMEFIRST == 0 || x % PTIMESECOND == 0);
         }
 
-        private void Schedule(Patient patient)
+        private StringBuilder Schedule(Patient patient,StringBuilder output)
         {
             // do scheduling here
 
@@ -117,13 +120,16 @@ namespace FVA
             {
                 hospitals.Add(new Hospital(hospitals.Count()));
 
-                Schedule(patient);
+                Schedule(patient,output);
             }
             else
             {
                 hospitals[ts1.Hospital].Schedule(patient.ID, ts1);
                 hospitals[ts2.Hospital].Schedule(patient.ID, ts2);
+                output.Append("\n" + (ts1.StartTime + 1) + ", " + (ts1.Hospital + 1) + ", " + (ts2.StartTime + 1) + ", " + (ts2.Hospital + 1));
             }
+
+            return output;
 
 
             //1: 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
