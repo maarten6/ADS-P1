@@ -15,85 +15,76 @@ namespace FVA
 
         private List<Hospital> hospitals;
 
+        // TODO IDEA
+        //1: 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
+        //2: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
+        //3: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
+        // n*n Matrix die per hospital timeslot afgaaat
+
         public Online(Patient firstpatient)
         {
             patients = new List<Patient> { firstpatient };
             hospitals = new List<Hospital> { new Hospital(0) };
-            
 
-            StringBuilder output = Schedule(firstpatient, new StringBuilder());
+
+            StringBuilder output = new StringBuilder();
+
+            Schedule(firstpatient, output);
 
             for (string line = Console.ReadLine(); line != "x"; line = Console.ReadLine())
             {
                 Patient cur = new Patient(patientCNT, line);
 
-                
-
+                // this list is only kept for overview of the programmer. its contents are never used by the code.
                 patients.Add(cur);
 
-                //DebugPrint("Scheduling a patient.");
-                output = Schedule(cur, output);
-                //DebugPrint("Done scheduling a patient");
+                DebugPrint("Scheduling a patient.");
+                Schedule(cur, output);
+                DebugPrint("Done scheduling a patient");
             }
 
-            Console.WriteLine(output);
+            // required output
+            output.Append(hospitals.Count().ToString());
+            Print(output.ToString());
 
-            // TODO: print all patient timeslots
+            // debug info hospital overview
+            DebugPrint("\n---------------------------------------------------------------------------------------\n");
             foreach (Hospital h in hospitals)
                 DebugPrint(h.ToString());
-            Print(hospitals.Count().ToString());
         }
 
-
-
-        public int calcScore(int x)
+        private void Schedule(Patient patient,StringBuilder output)
         {
-            if (x == 0)
-                return 2;
-            //2 + 3 + 3 + 2 moet ook kunnen, fix TODO
-
-            if (x % (PTIMEFIRST + PTIMESECOND) == 0 || modulo(x) || modulo(x - PTIMEFIRST) || modulo(x - PTIMESECOND))
-                        return 1;
-
-            return 0;
-        }
-
-        public bool modulo(int x)
-        {
-            return (x % PTIMEFIRST == 0 || x % PTIMESECOND == 0);
-        }
-
-        private StringBuilder Schedule(Patient patient,StringBuilder output)
-        {
-            // do scheduling here
-
-            int s = PTIMEFIRST + PTIMESECOND;
-
             List<TimeSlot> shot1List = new List<TimeSlot>();
             List<TimeSlot> shot2List = new List<TimeSlot>();
 
             foreach (Hospital hospital in hospitals)
             {
-                hospital.ExtendSchedule(patient);
+                hospital.ExtendSchedule(patient); //  TODO IDEA: this same number is calculated for every hospital. Then again, not so much hospitals.
 
                 hospital.GetSlots(shot1List, PTIMEFIRST, patient.FirstDoseFrom, patient.FirstDoseTo);
             }
 
 
-            shot1List.OrderBy(item => item.StartTime);
-            int count = 0;
+            shot1List.OrderBy(item => item.StartTime); // TODO: is this needed?
             int timeSlots = PTIMEFIRST + PTIMESECOND;
-            int maxScore = 0;
+            int maxScore = Int32.MinValue;
 
 
-            TimeSlot ts1 = null, ts2 = null, temp = null;
-            int p1before = 0, p1after = 0, p2before = 0, p2after = 0;
+            TimeSlot ts1 = null, 
+                     ts2 = null;
+
+            int p1before = 0, 
+                p1after = 0, 
+                p2before = 0, 
+                p2after = 0;
 
             foreach (TimeSlot timeslot1 in shot1List)
             {
                 shot2List = new List<TimeSlot>();
                 int startShot2 = timeslot1.EndTime + GAP + patient.Delay;
                 int endShot2 = startShot2 + patient.SecondDoseInterval;
+
                 foreach (Hospital hospital in hospitals)
                     hospital.GetSlots(shot2List, PTIMESECOND, startShot2, endShot2);
                 
@@ -101,12 +92,12 @@ namespace FVA
                 {    
                     if (timeslot1.Hospital == timeslot2.Hospital)
                         (p1before, p1after, p2before, p2after) = hospitals[timeslot1.Hospital].Distances(timeslot1, timeslot2);
-                    
                     else
                     {
                         (p1before, p1after) = hospitals[timeslot1.Hospital].Distances(timeslot1);
                         (p2before, p2after) = hospitals[timeslot2.Hospital].Distances(timeslot2);
                     }
+
                     int score = calcScore(p1before) + calcScore(p1after) + calcScore(p2before) + calcScore(p2after);
                     if (score > maxScore)
                     {
@@ -126,26 +117,25 @@ namespace FVA
             {
                 hospitals[ts1.Hospital].Schedule(patient.ID, ts1);
                 hospitals[ts2.Hospital].Schedule(patient.ID, ts2);
-                output.Append("\n" + (ts1.StartTime + 1) + ", " + (ts1.Hospital + 1) + ", " + (ts2.StartTime + 1) + ", " + (ts2.Hospital + 1));
+                output.Append((ts1.StartTime + 1) + ", " + (ts1.Hospital + 1) + ", " + (ts2.StartTime + 1) + ", " + (ts2.Hospital + 1) + "\n");
             }
+        }
+        public int calcScore(int x)
+        {
+            if (x == 0)
+                return 2;
+            //2 + 3 + 3 + 2 moet ook kunnen, TODO FIX
 
-            return output;
+            if (x % (PTIMEFIRST + PTIMESECOND) == 0 || modulo(x) || modulo(x - PTIMEFIRST) || modulo(x - PTIMESECOND))
+                return 1;
 
-
-            //1: 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
-            //2: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
-            //3: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
-            // n*n Matrix die per hospital timeslot afgaaat
-
+            return 0;
         }
 
-        // private bool ValidShot1(TimeSlot ts, Patient p) => ValidShot(ts, p.FirstDoseFrom, PTIMEFIRST);
-      
-        
-        // 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
-        // (1,2,3),(1,6,6),(1,10,13)
-
-
+        public bool modulo(int x)
+        {
+            return (x % PTIMEFIRST == 0 || x % PTIMESECOND == 0);
+        }
     }
 
     public class Hospital
@@ -157,23 +147,6 @@ namespace FVA
         {
             ID = id;
             schedule = new List<int>();
-        }
-        public Hospital(int id, Patient p)
-        {
-            // NOTE: this adds the patient in their first available slots, nothing smart here
-            ID = id;
-            schedule = new List<int>();
-
-            int startLastTimeSlot = p.FirstDoseTo + GAP + p.Delay;
-            int endLastTimeSlot = startLastTimeSlot + p.SecondDoseInterval;
-
-            ExtendSchedule(endLastTimeSlot);
-
-            for (int i = p.FirstDoseFrom; i < p.FirstDoseFrom + PTIMEFIRST; ++i)
-                schedule[i] = p.ID;
-
-            for (int i = endLastTimeSlot - PTIMESECOND; i <endLastTimeSlot; ++i)
-                schedule[i] = p.ID;
         }
 
         public Tuple<int,int> Distances(TimeSlot t)
@@ -191,7 +164,6 @@ namespace FVA
         }
         public Tuple<int, int, int, int> Distances(TimeSlot t1, TimeSlot t2)
         {
-            // should never be non zero (TODO maybe check)
             if (schedule[t2.StartTime] != 0) throw new Exception("This should never happen");
             schedule[t2.StartTime] = -1;
             (int t1before, int t1after) = Distances(t1);
@@ -229,7 +201,7 @@ namespace FVA
             }
         }
 
-        public List<TimeSlot> GetSlots(List<TimeSlot> result, int shotlength, int shotstart, int shotend)
+        public void GetSlots(List<TimeSlot> result, int shotlength, int shotstart, int shotend)
         {
             ExtendSchedule(shotend);
 
@@ -251,8 +223,6 @@ namespace FVA
             if (curlen >= shotlength)
                 for (int i = shotend - curlen + 1; i <= shotend - shotlength + 1; ++i)
                     result.Add(new TimeSlot(this.ID, i, shotlength));
-
-            return result;
         }
 
         public override string ToString()
