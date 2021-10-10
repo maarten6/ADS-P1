@@ -41,7 +41,7 @@ def IntegerProgrammingExample():
 
     # [END solver]
 
-    # [START variables]
+    # [START variables] 
     # x, y, and z are non-negative integer variables.
     x = solver.IntVar(0.0, solver.infinity(), 'x')
     y = solver.IntVar(0.0, solver.infinity(), 'y')
