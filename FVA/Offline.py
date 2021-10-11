@@ -49,6 +49,9 @@ def parseInput():
         maxtime[0] = max(maxtime[0], patient.d)
         mintime[1] = min(mintime[1], patient.r + p1 + gap + patient.x)
         maxtime[1] = max(maxtime[1], patient.d + gap + patient.x + patient.l)
+    if numPatients == 0:
+        print(0)
+        exit()
     return ProgramInput(p1, p2, gap, patients, mintime, maxtime)
 
 def SolveILP(programInput):
