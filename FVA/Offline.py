@@ -97,6 +97,7 @@ def SolveILP(programInput):
             zj = solver.IntVar(0, 1, f'z(job:{job}, time:{programInput.mintime[1] + timeslot})')
             dose2[job][timeslot] = zj
             currentTime = timeslot + programInput.mintime[1]
+            #TODO: This bound is too broad, it needs to take into account the time of dose 1!!!
             if  currentTime < patient.r + programInput.p1 + programInput.gap + patient.x -1 or currentTime > patient.d + programInput.p1 + programInput.gap + patient.x + patient.l -2:
                 constraintD = solver.Constraint(0, 0)
                 constraintD.SetCoefficient(zj, 1)
