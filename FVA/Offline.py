@@ -134,7 +134,7 @@ def SolveILP(programInput):
                 constraintA.SetCoefficient(dose1[job][timeslot], 1)
 
         # T: Time that first dose is taken
-        T = solver.IntVar(0, solver.infinity(), f'T(job:{job})')
+        T = solver.IntVar(0, programInput.maxtime[0], f'T(job:{job})')
         Ts[job] = T
         constraintT = solver.Constraint(1, 1)
         constraintT.SetCoefficient(T, 1)
@@ -143,9 +143,9 @@ def SolveILP(programInput):
 
         # Set up the z variables
         for timeslot in range (0, numTimeslotsDose2):
-            zj = solver.IntVar(0, 1, f'z(job:{job}, time:{programInput.mintime[1] + timeslot})')
-            dose2[job][timeslot] = zj
             currentTime = timeslot + programInput.mintime[1]
+            zj = solver.IntVar(0, 1, f'z(job:{job}, time:{currentTime})')
+            dose2[job][timeslot] = zj
 
         # b: 1 if the patient has not gotten their second dose yet
         # Set up all the b variables for this job
@@ -188,7 +188,7 @@ def SolveILP(programInput):
         constraintZ.SetCoefficient(T, -1)
 
     #M: total number of machines
-    M = solver.IntVar(0.0, solver.infinity(), 'M')
+    M = solver.IntVar(0, programInput.patients, 'M')
     # [END variables]
 
     # [START constraints]
