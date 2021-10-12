@@ -10,7 +10,7 @@ class Patient:
         self.x = x
         self.l = l
         self.firstPossible = [r, r + p1 + gap + x] #First possible time for first dose, first possible time for second dose (if first dose was taken at r)
-        self.lastPossible = [d - p1 + 1, d + gap + x + l + p1 - p2] #Last possible time for first dose, last possible time for second dose (if first dose processing ended at d)
+        self.lastPossible = [d - p1 + 1, d + gap + x + l - p2] #Last possible time for first dose, last possible time for second dose (if first dose processing ended at d)
 
 class ProgramInput:
     """All info read from input
