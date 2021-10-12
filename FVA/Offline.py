@@ -145,7 +145,7 @@ def SolveILP(programInput):
 
         # T: Time that first dose is taken. This time is 1 + SUM a
         # T = 1 + SUM a   =>   T - SUM a = 1
-        T = solver.IntVar(0, solver.infinity(), f'T(job:{job})')
+        T = solver.IntVar(0, programInput.maxtime[0], f'T(job:{job})')
         Ts[job] = T
         constraintT = solver.Constraint(programInput.mintime[0], programInput.mintime[0])
         constraintT.SetCoefficient(T, 1)
@@ -154,9 +154,10 @@ def SolveILP(programInput):
 
         # Set up the z variables
         for timeslot in range (0, numTimeslotsDose2):
-            zj = solver.IntVar(0, 1, f'z(job:{job}, time:{programInput.mintime[1] + timeslot})')
-            dose2[job][timeslot] = zj
             currentTime = timeslot + programInput.mintime[1]
+            zj = solver.IntVar(0, 1, f'z(job:{job}, time:{currentTime})')
+            dose2[job][timeslot] = zj
+            
             # Current time is either before or after shots can be taken: set zj to always 0
             if currentTime < patient.firstPossible[1] or currentTime > patient.lastPossible[1]:
                 constraintZ = solver.Constraint(0, 0)
@@ -210,7 +211,7 @@ def SolveILP(programInput):
         constraintZ.SetCoefficient(T, -1)
 
     #M: total number of machines
-    M = solver.IntVar(0.0, solver.infinity(), 'M')
+    M = solver.IntVar(0, programInput.patients, 'M')
     # [END variables]
 
     # [START constraints]
