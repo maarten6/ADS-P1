@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Small example to illustrate solving a MIP problem."""
 from ortools.linear_solver import pywraplp
 
 class Patient:
@@ -45,10 +44,12 @@ def parseInput():
     for i in range(0, numPatients):
         patient = parsePatient(input())
         patients.append(patient)
+        # First dose maximum interval, over all patients
         mintime[0] = min(mintime[0], patient.r)
         maxtime[0] = max(maxtime[0], patient.d)
+        # Second dose maximum interval, over all patients
         mintime[1] = min(mintime[1], patient.r + p1 + gap + patient.x)
-        maxtime[1] = max(maxtime[1], patient.d + gap + patient.x + patient.l)
+        maxtime[1] = max(maxtime[1], patient.d + p1 + gap + patient.x + patient.l - 1)
     if numPatients == 0:
         print(0)
         exit()
@@ -61,8 +62,10 @@ def SolveILP(programInput):
     solver = pywraplp.Solver.CreateSolver('SCIP')
     patients = programInput.patients
     numTimeslots = programInput.maxtime[1] - programInput.mintime[0] + 1
-    numTimeslotsDose1 = programInput.maxtime[0] - programInput.mintime[0] +1
-    numTimeslotsDose2 = programInput.maxtime[1] - programInput.mintime[1] +1
+    # Note that this is the maximum feasible interval of dose 1 by considering all patiens
+    numTimeslotsDose1 = programInput.maxtime[0] - programInput.mintime[0] + 1
+    # Note that this is the maximum feasible interval of dose 2 by considering all patiens
+    numTimeslotsDose2 = programInput.maxtime[1] - programInput.mintime[1] + 1
 
     # [END solver]
 
@@ -78,7 +81,9 @@ def SolveILP(programInput):
     # Initialise arrays that holds variables of dose 1 and dose 2
     dose1 = [None] * len(patients)
     dose2 = [None] * len(patients)
+    # The timeslot number where dose 1, of each job is done
     Ts = [None] * len(patients)
+    # The timeslot number where dose 2 of each job is done
     Ses = [None] * len(patients)
     for job in range (0, len(patients)):
         dose1[job] = [None] * numTimeslotsDose1
