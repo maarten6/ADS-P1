@@ -36,15 +36,14 @@ if __name__ == "__main__":
 
     fd = open('output.txt', 'r')
     patients = []
-    for line in fd.read().split('\n'):
+    lines = fd.read().split('\n')
+    for line in lines:
         try:
             patients.append(PatientOutput(line))
         except:
             pass
 
-    total = range(0,10)
-    for i in total:
-        print(i)
+    print(f"Total machines: {lines[len(lines)-2]}")
 
     for i in range(0, len(patients)):
         if not patients[i].checkRange(programInput.patients[i], programInput):
@@ -55,14 +54,14 @@ if __name__ == "__main__":
         allTimesInUse = range(patients[i].T1, patients[i].T1 + programInput.p1)
         for time in allTimesInUse:
             if time in machinesInUse[patients[i].M1]:
-                print(f"Hospital {patients[i].M1} double booked at time {time} for dose 1 by job {i} and job {machinesInUse[patients[i].M1][time]}")
+                print(f"Hospital {patients[i].M1} double booked at time {time} for dose 1 by job {i+1} and job {machinesInUse[patients[i].M1][time]+1}")
             else:
                 machinesInUse[patients[i].M1][time] = i
 
         allTimesInUse = range(patients[i].T2, patients[i].T2 + programInput.p2)
         for time in allTimesInUse:
             if time in machinesInUse[patients[i].M2]:
-                print(f"Hospital {patients[i].M2} double booked at time {time} for dose 2 by job {i} and job {machinesInUse[patients[i].M2][time]}")
+                print(f"Hospital {patients[i].M2} double booked at time {time} for dose 2 by job {i+1} and job {machinesInUse[patients[i].M2][time]+1}")
             else:
                 machinesInUse[patients[i].M2][time] = i
     

@@ -185,19 +185,18 @@ def SolveILP(programInput):
 
         # First we check if there can be any patients for dose 1 in this timeslot
         # First we check if there can be any patients for dose 2 in this timeslot
-        contains1 = timeslot <= programInput.maxtime[0]
+        contains1 = timeslot <= programInput.maxtime[0] + programInput.p1 - 1
         contains2 = programInput.mintime[1] <= timeslot
 
         for machine in range(1, machineUpperBound):
             constraintMaxOnePatient = solver.Constraint(0, 1)
-            if contains1: #Patients for dose 1 are in this timeslot, sum them op
+            if contains1: #Patients for dose 1 are in this timeslot, sum them
                 index1 = timeslot - programInput.mintime[0] #Transform timeslot into index for dose1 array, t
-                print(range(max (index1-programInput.p1 + 1, 0), index1 + 1))
-                for index in range(max (index1-programInput.p1 + 1, 0), index1 + 1): # In this timeslot, patients that got a dose in a previous timeslot, may still be in the hospital
+                for index in range(max (index1-programInput.p1 + 1, 0), min(index1, programInput.maxtime[0]-programInput.mintime[0]) + 1): # In this timeslot, patients that got a dose in a previous timeslot, may still be in the hospital
                     for job in range (0, len(patients)):
                         constraint.SetCoefficient(dose1[job][index][machine], 1)
                         constraintMaxOnePatient.SetCoefficient(dose1[job][index][machine], 1)
-            if contains2: #Patients for dose 2 are in this timeslot, sum them op
+            if contains2: #Patients for dose 2 are in this timeslot, sum them
                 index2 = timeslot - programInput.mintime[1]
                 for index in range(max (index2-programInput.p2 + 1, 0), index2 + 1):
                     for job in range (0, len(patients)):
