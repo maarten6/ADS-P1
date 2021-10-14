@@ -10,8 +10,8 @@ class Patient:
         self.x = x
         self.l = l
         self.firstPossible = [r, r + p1 + gap + x] #First possible time for first dose, first possible time for second dose (if first dose was taken at r)
-        self.lastPossible = [d - p1 + 1, d + gap + x + l - p2] #Last possible time for first dose, last possible time for second dose (if first dose processing ended at d)
-
+        self.lastPossible = [d - p1 + 1, d + gap + x + l - p2 + 1] #Last possible time for first dose, last possible time for second dose (if first dose processing ended at d)
+# S <= d - p1 + g + x + l + p1 - p2
 class ProgramInput:
     """All info read from input
 
@@ -57,12 +57,6 @@ def parseInput():
         exit()
     return ProgramInput(p1, p2, gap, patients, mintime, maxtime)
 
-def getFirstUncommon(checkList, referenceList):
-    """Returns the first item that is in referenceList that is not in checkList"""
-    for i in range(0, len(referenceList)):
-        if i >= len(checkList) or checkList[i] is not referenceList[i]:
-            return referenceList[i]
-
 def SolveILP(programInput):
     # [START solver]
     # Create the mip solver with the SCIP backend.
@@ -88,8 +82,8 @@ def SolveILP(programInput):
     # M    : Maximal number of concurrent machines over all timeslots
 
     # Initialise arrays that holds variables of dose 1 and dose 2
-    dose1 = [None] * len(patients)
-    dose2 = [None] * len(patients)
+    dose1 = [None] * len(patients) #Holds all y variables
+    dose2 = [None] * len(patients) #Holds all z variables
     # The timeslot number where dose 1, of each job is done
     Ts = [None] * len(patients)
     # The timeslot number where dose 2 of each job is done
@@ -101,9 +95,6 @@ def SolveILP(programInput):
     # Create ILP variables
     for job in range (0, len(patients)):
         patient = patients[job]
-        # Set up an array for the a variables of this job
-        # a: 1 if the patient has not gotten their first dose yet
-        a = [None] * numTimeslotsDose1
 
         # Setting up all yj variables
         for timeslot in range (0, numTimeslotsDose1):
@@ -114,45 +105,17 @@ def SolveILP(programInput):
             if currentTime < patient.firstPossible[0] or currentTime > patient.lastPossible[0]:
                 constraintD = solver.Constraint(0, 0)
                 constraintD.SetCoefficient(yj, 1)        
+            
 
-        # Set up all the a variables for this job
-        for timeslot in range (0, numTimeslotsDose1):
-            at = solver.IntVar(0, 1, 'a')
-            a[timeslot] = at
-            currentTime = timeslot + programInput.mintime[0]
-
-            # Base case for a: ar = 1-y
-            if currentTime == patient.firstPossible[0]:
-                constraintA = solver.Constraint(1, 1)
-                constraintA.SetCoefficient(at, 1)
-                constraintA.SetCoefficient(dose1[job][timeslot], 1)
-
-            # All times before the first dose can be taken should have at=1
-            elif currentTime < patient.firstPossible[0]:
-                constraintA = solver.Constraint(1, 1)
-                constraintA.SetCoefficient(at, 1)
-
-            # All times after first dose can be taken should have at=0
-            elif currentTime > patient.lastPossible[0]:
-                constraintA = solver.Constraint(0, 0)
-                constraintA.SetCoefficient(at, 1)
-
-            # All times in the first dose interval should have at = a(t-1) - y
-            # Thus at - a(t-1) + y = 0
-            else:
-                constraintA = solver.Constraint(0, 0)
-                constraintA.SetCoefficient(at, 1)
-                constraintA.SetCoefficient(a[timeslot -1], -1)
-                constraintA.SetCoefficient(dose1[job][timeslot], 1)
-
-        # T: Time that first dose is taken. This time is 1 + SUM a
-        # T = 1 + SUM a   =>   T - SUM a = 1
-        T = solver.IntVar(0, programInput.maxtime[0], f'T(job:{job})')
+        # T: Time that first dose is taken
+        # T = SUM yj*t   =>   T - SUM yj*t = 0
+        T = solver.IntVar(patient.firstPossible[0], patient.lastPossible[0], f'T(job:{job})')
         Ts[job] = T
-        constraintT = solver.Constraint(programInput.mintime[0], programInput.mintime[0])
-        constraintT.SetCoefficient(T, 1)
+        constraintTMinSum = solver.Constraint(0, 0)
+        constraintTMinSum.SetCoefficient(T, 1)
         for timeslot in range (0, numTimeslotsDose1):
-            constraintT.SetCoefficient(a[timeslot], -1)
+            currentTime = timeslot + programInput.mintime[0]
+            constraintTMinSum.SetCoefficient(dose1[job][timeslot], -currentTime)
 
         # Set up the z variables
         for timeslot in range (0, numTimeslotsDose2):
@@ -163,72 +126,42 @@ def SolveILP(programInput):
             # Current time is either before or after shots can be taken: set zj to always 0
             if currentTime < patient.firstPossible[1] or currentTime > patient.lastPossible[1]:
                 constraintZ = solver.Constraint(0, 0)
-                constraintZ.SetCoefficient(zj, 1)   
-
-        # b: 1 if the patient has not gotten their second dose yet
-        # Set up all the b variables for this job
-        b = [None] * numTimeslotsDose2
-        for timeslot in range (0, numTimeslotsDose2):
-            bt = solver.IntVar(0, 1, 'b')
-            b[timeslot] = bt
-            currentTime = timeslot + programInput.mintime[1]
-            if currentTime == patient.firstPossible[1]:
-                # Base case for b: b_(firstPossible2ndDoseTime) = 1-y   =>   bt + y = 1
-                constraintB = solver.Constraint(1, 1)
-                constraintB.SetCoefficient(bt, 1)
-                constraintB.SetCoefficient(dose2[job][timeslot], 1)
-
-            # All times before the second dose can be taken should have bt=1
-            elif currentTime < patient.firstPossible[1]:
-                constraintB = solver.Constraint(1, 1)
-                constraintB.SetCoefficient(bt, 1)
-
-            # All times after second dose can be taken should have bt=0
-            elif currentTime > patient.lastPossible[1]:
-                constraintB = solver.Constraint(0, 0)
-                constraintB.SetCoefficient(bt, 1)
-
-            # All times in the second dose interval should have bt = b(t-1) - z
-            # Thus bt - b(t-1) + z = 0
-            else:
-                constraintB = solver.Constraint(0, 0)
-                constraintB.SetCoefficient(bt, 1)
-                constraintB.SetCoefficient(b[timeslot -1], -1)
-                constraintB.SetCoefficient(dose2[job][timeslot], 1)
+                constraintZ.SetCoefficient(zj, 1)
 
         # S: Time that second dose is taken
-        S = solver.IntVar(0, solver.infinity(), f'T(job:{job})')
+        # S = SUM zj*t   =>   S - SUM zj*t = 0
+        S = solver.IntVar(programInput.mintime[1], programInput.maxtime[1], f'S(job:{job})')
         Ses[job] = S
-
-        # S = FIRST TIME FOR SECOND DOSE + SUM bt
-        constraintS = solver.Constraint(programInput.mintime[1], programInput.mintime[1])
-        constraintS.SetCoefficient(S, 1)
+        constraintSMinSum = solver.Constraint(0, 0)
+        constraintSMinSum.SetCoefficient(S, 1)
         for timeslot in range (0, numTimeslotsDose2):
-            constraintS.SetCoefficient(b[timeslot], -1)
+            currentTime = timeslot + programInput.mintime[1]
+            constraintSMinSum.SetCoefficient(dose2[job][timeslot], -currentTime)
 
-        # S \in [T + p1 + gap + x, T + p1 + gap + x + l - p2 + 1]
-        print([programInput.mintime[1] + programInput.p1 + programInput.gap + patient.x, programInput.mintime[1] + programInput.p1 + programInput.gap + patient.x + patient.l - programInput.p2])
-        constraintZ = solver.Constraint(programInput.p1 + programInput.gap + patient.x, programInput.p1 + programInput.gap + patient.x + patient.l - programInput.p2)
-        constraintZ.SetCoefficient(S, 1)
-        constraintZ.SetCoefficient(T, -1)
+        # S ∈ [T + p1 + gap + x, T + p1 + gap + x + l - p2]
+        print([programInput.p1 + programInput.gap + patient.x, programInput.p1 + programInput.gap + patient.x + patient.l - programInput.p2])
+        constraintFeasibleScheduleS = solver.Constraint(programInput.p1 + programInput.gap + patient.x, programInput.p1 + programInput.gap + patient.x + patient.l - programInput.p2)
+        constraintFeasibleScheduleS.SetCoefficient(S, 1)
+        constraintFeasibleScheduleS.SetCoefficient(T, -1)
 
     #M: total number of machines
-    M = solver.IntVar(0, programInput.patients, 'M')
+    M = solver.IntVar(0, len(patients), 'M')
     # [END variables]
 
     # [START constraints]
-    # SUM yjt + SUM zjt <= M
-    for timeslot in range (programInput.mintime[0], programInput.mintime[0] + numTimeslots):
-        constraint = solver.Constraint(-solver.infinity(), 0)
+    # FORALL t: SUM yjt + SUM zjt <= M
+    # FORALL t: SUM yjt + SUM zjt - M <= 0
+    for timeslot in range (programInput.mintime[0], programInput.maxtime[1] + 1):
+        constraint = solver.Constraint(-len(patients), 0)
 
         # First we check if there can be any patients for dose 1 in this timeslot
         # First we check if there can be any patients for dose 2 in this timeslot
-        contains1 = programInput.mintime[0] <= timeslot and timeslot <= programInput.maxtime[0]
-        contains2 = programInput.mintime[1] <= timeslot and timeslot <= programInput.maxtime[1]
+        contains1 = timeslot <= programInput.maxtime[0]
+        contains2 = programInput.mintime[1] <= timeslot
 
         if contains1: #Patients for dose 1 are in this timeslot, sum them op
-            index1 = timeslot - programInput.mintime[0]
-            for index in range(max (index1-programInput.p1 + 1, 0), index1 + 1):
+            index1 = timeslot - programInput.mintime[0] #Transform timeslot into index for dose1 array, t
+            for index in range(max (index1-programInput.p1 + 1, 0), index1 + 1): # In this timeslot, patients that got a dose in a previous timeslot, may still be in the hospital
                 for job in range (0, len(patients)):
                     constraint.SetCoefficient(dose1[job][index], 1)
         if contains2: #Patients for dose 2 are in this timeslot, sum them op
@@ -278,24 +211,13 @@ def SolveILP(programInput):
 
     # For each patient, get their T and S value and print it out
     for job in range (0, len(patients)):
-        timeFirst = int(Ts[job].solution_value())
-        timeSecond = int(Ses[job].solution_value())
+        timeFirstDose = int(Ts[job].solution_value())
+        timeSecondDose = int(Ses[job].solution_value())
 
-        machineListFirst = busyHospitals[timeFirst]
-        machineFirst = getFirstUncommon(machineListFirst, allHospitals)
+        machineFirstDose = -1
+        machineSecondDose = -1
 
-        for time in range(timeFirst, timeFirst + programInput.p1):
-            busyHospitals[time].append(machineFirst)
-        
-
-        machineListSecond = busyHospitals[timeSecond]
-        machineSecond = getFirstUncommon(machineListSecond, allHospitals)
-        print(machineListSecond)
-
-        for time in range(timeSecond, timeSecond + programInput.p2):
-            busyHospitals[time].append(machineSecond)
-
-        print(f"Schedule {job} at {timeFirst} (H:{machineFirst}) and {timeSecond}(H:{machineSecond})")
+        print(f"Schedule job {job} at timeslot {timeFirstDose} (machine number:{machineFirstDose}) and {timeSecondDose}(machine number:{machineSecondDose})")
     # [END print_solution]
 
 
