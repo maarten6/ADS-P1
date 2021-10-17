@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """Output checker for Offline.py, the program by the Federal Vaccination Agency to schedule vaccinations. Will check if the output is consistent with the input"""
-import Offline as offline
+import Offline2 as offline
 import sys
 import os
 
