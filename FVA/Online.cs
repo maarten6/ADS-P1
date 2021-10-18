@@ -194,6 +194,8 @@ namespace FVA
             schedule = new List<int>();
         }
 
+
+
         public Tuple<int, int> Distances(TimeSlot t)
         {
             int before = 0,
@@ -282,8 +284,22 @@ namespace FVA
         public override string ToString()
         {
             StringBuilder res = new StringBuilder();
-            for (int i = 0; i < schedule.Count(); ++i) res.Append(schedule[i].ToString());
+            char[] alfabet = "abcdefghijklmnopqrstuvwxyz!@#$%^&*?/~-+|:;'<>".ToCharArray();
+                
+                foreach (int item in schedule)
+                {
+                if (item == 0)
+                    res.Append("-");
+                    else if (item <= 9)
+                        res.Append(item);
 
+                    else if (item < alfabet.Length + 9)
+                        res.Append(alfabet[item - 9]);
+
+                    else
+                        res.Append(item);
+                }
+   
             return res.ToString();
         }
     }

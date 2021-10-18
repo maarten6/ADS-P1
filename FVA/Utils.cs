@@ -9,7 +9,7 @@ namespace FVA
     public static class Utils
     {
         public const bool DEBUG = true;
-        public const bool TESTCASEZEROBASED = false;
+        public const bool TESTCASEZEROBASED = true;
 
         public static Random PRNG = new Random(69);
 

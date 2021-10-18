@@ -4,7 +4,7 @@ namespace FVA
 {
     class Program
     {
-        static bool READINPUT = false;
+        static bool READINPUT = true;
         static void Main(string[] args)
         {
             if (READINPUT)
