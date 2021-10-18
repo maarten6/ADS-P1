@@ -30,8 +30,8 @@ namespace FVA
             else
             {
                 this.ID = ID + 1;
-                this.FirstDoseFrom = firstDoseFrom - 1;
-                this.FirstDoseTo = firstDoseTo - 1;
+                this.FirstDoseFrom = Utils.TESTCASEZEROBASED ? firstDoseFrom : firstDoseFrom - 1;
+                this.FirstDoseTo = Utils.TESTCASEZEROBASED ? firstDoseTo : firstDoseTo - 1;
                 this.Delay = delay;
                 this.SecondDoseInterval = secondDoseInterval;
             }

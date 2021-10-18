@@ -44,10 +44,29 @@ namespace FVA
             }
             else
             {
-                PatientConfiguration pc = new PatientConfiguration(3,10,1,3,0,0,3,3);
-                TestConfiguration config = new TestConfiguration(3,3,0,2, pc);
+                int patients = 8;
+                PatientConfiguration pc = new PatientConfiguration(0, 15, 0, 20, 0, 5, 0, 5);
+                TestConfiguration config = new TestConfiguration(3, 3, 0, patients, pc);
 
-                new Online(config);
+                Online online,
+                        worst;
+                int maxhospitalsseen = int.MinValue;
+                for (int i = 0; i < 1e7; ++i) 
+                {
+                    config = new TestConfiguration(3, 3, 0, patients, pc);
+                    online = new Online(config);
+
+
+                    if (maxhospitalsseen < online.HospitalCNT)
+                    {
+                        worst = online;
+                        maxhospitalsseen = 8;// online.HospitalCNT;
+                        if (maxhospitalsseen == patients)
+                            break;
+                    }
+                }
+
+                Utils.DebugPrint($"worst found: {maxhospitalsseen}");
             }
         }
     }

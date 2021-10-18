@@ -9,6 +9,7 @@ namespace FVA
 {
     public class Online
     {
+        public int HospitalCNT { get => hospitals.Count; }
         private int patientCNT { get => patients.Count(); }
         // not sure if this list is needed, but it will certainly be handy for debugging
         private List<Patient> patients;
@@ -81,7 +82,7 @@ namespace FVA
                 DebugPrint(h.ToString());
         }
 
-        private void Schedule(Patient patient,StringBuilder output)
+        private void Schedule(Patient patient, StringBuilder output)
         {
             List<TimeSlot> shot1List = new List<TimeSlot>();
             List<TimeSlot> shot2List = new List<TimeSlot>();
@@ -96,12 +97,12 @@ namespace FVA
             int timeSlots = PTIMEFIRST + PTIMESECOND;
             int maxScore = Int32.MinValue;
 
-            TimeSlot ts1 = null, 
+            TimeSlot ts1 = null,
                      ts2 = null;
 
-            int p1before = 0, 
-                p1after = 0, 
-                p2before = 0, 
+            int p1before = 0,
+                p1after = 0,
+                p2before = 0,
                 p2after = 0;
 
             foreach (TimeSlot timeslot1 in shot1List)
@@ -112,9 +113,9 @@ namespace FVA
 
                 foreach (Hospital hospital in hospitals)
                     hospital.GetSlots(shot2List, PTIMESECOND, startShot2, endShot2);
-                
+
                 foreach (TimeSlot timeslot2 in shot2List)
-                {    
+                {
                     if (timeslot1.Hospital == timeslot2.Hospital)
                         (p1before, p1after, p2before, p2after) = hospitals[timeslot1.Hospital].Distances(timeslot1, timeslot2);
                     else
@@ -122,24 +123,26 @@ namespace FVA
                         (p1before, p1after) = hospitals[timeslot1.Hospital].Distances(timeslot1);
                         (p2before, p2after) = hospitals[timeslot2.Hospital].Distances(timeslot2);
                     }
-                    
+
                     int score = calcScore(p1before) + calcScore(p1after) + calcScore(p2before) + calcScore(p2after);
 
-                    /*Console.WriteLine(p1before + " " + p1after + " " + p2before + " " + p2after);
-                    Console.WriteLine(timeslot1.StartTime + " " + timeslot1.EndTime + " Score:" + score);*/
+
+
+                    /*Console.WriteLine(p1before + " " + p1after + " " + p2before + " " + p2after);*/
+                    //DebugPrint(timeslot1.StartTime + " " + timeslot2.StartTime + " Score:" + score);
 
                     if (score > maxScore)
-                    {         
+                    {
                         maxScore = score;
                         ts1 = timeslot1;
-                        ts2 = timeslot2;      
+                        ts2 = timeslot2;
                     }
                 }
             }
             if (ts1 == null || ts2 == null)
             {
                 hospitals.Add(new Hospital(hospitals.Count()));
-                Schedule(patient,output);
+                Schedule(patient, output);
             }
             else
             {
@@ -151,6 +154,9 @@ namespace FVA
 
         public static int calcScore(int x)
         {
+            if (x == int.MaxValue)
+                return 3;
+
             if (x < 0)
                 return 0;
 
@@ -162,22 +168,19 @@ namespace FVA
 
             return Math.Max(calcScore(x - PTIMEFIRST), calcScore(x - PTIMEFIRST));
         }
-/*        public int calcScore(int x)
-        {
-            if (x == 0)
-                return 3;
-            //2 + 3 + 3 + 2 moet ook kunnen, TODO FIX
-
-            if (x % (PTIMEFIRST + PTIMESECOND) == 0 || modulo(x) || modulo(x - PTIMEFIRST) || modulo(x - PTIMESECOND))
-                return 2;
-
-            return 0;
-        }
-
-        public bool modulo(int x)
-        {
-            return (x % PTIMEFIRST == 0 || x % PTIMESECOND == 0);
-        }*/
+        /*        public int calcScore(int x)
+                {
+                    if (x == 0)
+                        return 3;
+                    //2 + 3 + 3 + 2 moet ook kunnen, TODO FIX
+                    if (x % (PTIMEFIRST + PTIMESECOND) == 0 || modulo(x) || modulo(x - PTIMEFIRST) || modulo(x - PTIMESECOND))
+                        return 2;
+                    return 0;
+                }
+                public bool modulo(int x)
+                {
+                    return (x % PTIMEFIRST == 0 || x % PTIMESECOND == 0);
+                }*/
     }
 
     public class Hospital
@@ -191,7 +194,7 @@ namespace FVA
             schedule = new List<int>();
         }
 
-        public Tuple<int,int> Distances(TimeSlot t)
+        public Tuple<int, int> Distances(TimeSlot t)
         {
             int before = 0,
                 after = 0;
@@ -202,8 +205,8 @@ namespace FVA
                 for (int i = t.EndTime; i < schedule.Count && schedule[i] == 0; ++i)
                 {
                     ++after;
-                    if ((i + 1) == schedule.Count)
-                        after = -1;
+                    if (i == schedule.Count - 1)
+                        after = int.MaxValue;
                 }
 
             return new Tuple<int, int>(before, after);
@@ -222,9 +225,9 @@ namespace FVA
             (int t2before, int t2after) = Distances(t2);
             schedule[t1.EndTime - 1] = 0;
 
-            if(test2 == t2before)
+            if (test2 == t2before)
                 t2before = -1;
-            
+
 
             return new Tuple<int, int, int, int>(t1before, t1after, t2before, t2after);
         }
@@ -264,7 +267,7 @@ namespace FVA
                     if (curlen >= shotlength)
                         for (int i = currentslot - curlen; i <= currentslot - shotlength; ++i)
                             result.Add(new TimeSlot(this.ID, i, shotlength));
-                    
+
                     curlen = 0;
                     continue;
                 }

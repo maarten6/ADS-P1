@@ -25,7 +25,6 @@ namespace FVA
 
     public class PatientConfiguration
     {
-        Random rnd;
         private int
             FirstDoseFromLB,
             FirstDoseFromUB,
@@ -38,30 +37,33 @@ namespace FVA
 
         public PatientConfiguration(int FirstDoseFromLB, int FirstDoseFromUB, int FirstDoseToLB, int FirstDoseToUB, int DelayLB, int DelayUB, int SecondDoseIntervalLB, int SecondDoseIntervalUB)
         {
-            rnd = new Random(69);
-
-            this.FirstDoseFromLB = FirstDoseFromLB + 1;
-            this.FirstDoseFromUB = FirstDoseFromUB + 1;
-            this.FirstDoseToLB = FirstDoseToLB + 1;
-            this.FirstDoseToUB = FirstDoseToUB + 1;
-            this.DelayLB = DelayLB + 1;
-            this.DelayUB = DelayUB + 1;
-            this.SecondDoseIntervalLB = SecondDoseIntervalLB + 1;
-            this.SecondDoseIntervalUB = SecondDoseIntervalUB + 1;
+            this.FirstDoseFromLB = FirstDoseFromLB;
+            this.FirstDoseFromUB = FirstDoseFromUB;
+            this.FirstDoseToLB = FirstDoseToLB;
+            this.FirstDoseToUB = FirstDoseToUB;
+            this.DelayLB = DelayLB;
+            this.DelayUB = DelayUB;
+            this.SecondDoseIntervalLB = SecondDoseIntervalLB;
+            this.SecondDoseIntervalUB = SecondDoseIntervalUB;
         }
 
         public Patient GeneratePatient(int ID)
         {
+            int time = Utils.GAP + Utils.PTIMEFIRST + Utils.PTIMESECOND;
             // TODO: add sanity checks
-           /* int firstDoseFrom = rnd.Next(FirstDoseFromLB, FirstDoseFromUB),
-                firstDoseTo = rnd.Next(FirstDoseToLB, FirstDoseToUB),
-                delay = rnd.Next(DelayLB, DelayUB),
-                secondDoseInterval = rnd.Next(SecondDoseIntervalLB, SecondDoseIntervalUB);*/
+            int firstDoseFrom = Utils.PRNG.Next(FirstDoseFromLB, FirstDoseFromUB);
+            while (firstDoseFrom  + Utils.PTIMEFIRST >= FirstDoseToUB)
+                firstDoseFrom = Utils.PRNG.Next(FirstDoseFromLB, FirstDoseFromUB);
 
-            int firstDoseFrom = 1,
-               firstDoseTo = 4,
-               delay = 2,
-               secondDoseInterval = 8;
+            int firstDoseTo = Utils.PRNG.Next(FirstDoseToLB, FirstDoseToUB);
+            while (firstDoseFrom + Utils.PTIMEFIRST > firstDoseTo)
+                firstDoseTo = Utils.PRNG.Next(FirstDoseToLB, FirstDoseToUB);
+
+            int delay = Utils.PRNG.Next(DelayLB, DelayUB);
+            int secondDoseInterval = Utils.PRNG.Next(SecondDoseIntervalLB, SecondDoseIntervalUB);
+            while (secondDoseInterval < Utils.PTIMESECOND)
+                secondDoseInterval = Utils.PRNG.Next(SecondDoseIntervalLB, SecondDoseIntervalUB);
+
 
             return new Patient(ID, firstDoseFrom, firstDoseTo, delay, secondDoseInterval);
         }
