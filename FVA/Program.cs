@@ -60,7 +60,7 @@ namespace FVA
                     if (maxhospitalsseen < online.HospitalCNT)
                     {
                         worst = online;
-                        maxhospitalsseen = 8;// online.HospitalCNT;
+                        maxhospitalsseen = online.HospitalCNT;
                         if (maxhospitalsseen == patients)
                             break;
                     }
