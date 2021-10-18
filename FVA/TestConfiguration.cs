@@ -9,5 +9,14 @@ namespace FVA
     public class TestConfiguration
     {
         public  List<Patient> Patients { get; private set; }
+
+        public TestConfiguration()
+        {
+            Utils.PTIMEFIRST = 3;
+            Utils.PTIMESECOND = 3;
+            Utils.GAP = 3;
+
+            this.Patients = new List<Patient>();
+        }
     }
 }
