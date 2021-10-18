@@ -44,7 +44,8 @@ namespace FVA
             }
             else
             {
-                TestConfiguration config = new TestConfiguration();
+                PatientConfiguration pc = new PatientConfiguration(3,10,1,3,0,0,3,3);
+                TestConfiguration config = new TestConfiguration(3,3,0,2, pc);
 
                 new Online(config);
             }
