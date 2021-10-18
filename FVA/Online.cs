@@ -21,6 +21,7 @@ namespace FVA
         //3: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
         // n*n Matrix die per hospital timeslot afgaaat
 
+        // constructor for solving the actual problem
         public Online(Patient firstpatient)
         {
             patients = new List<Patient> { firstpatient };
@@ -34,6 +35,34 @@ namespace FVA
             {
                 Patient cur = new Patient(patientCNT, line);
 
+                // this list is only kept for overview of the programmer. its contents are never used by the code.
+                patients.Add(cur);
+
+                DebugPrint("Scheduling a patient.");
+                Schedule(cur, output);
+                DebugPrint("Done scheduling a patient");
+            }
+
+            // required output
+            output.Append(hospitals.Count().ToString());
+            Print(output.ToString());
+
+            // debug info hospital overview
+            DebugPrint("\n---------------------------------------------------------------------------------------\n");
+            foreach (Hospital h in hospitals)
+                DebugPrint(h.ToString());
+        }
+
+        // constructor for solving generated testcases
+        public Online(TestConfiguration config)
+        {
+            patients = new List<Patient> { };
+            hospitals = new List<Hospital> { new Hospital(0) };
+
+            StringBuilder output = new StringBuilder();
+
+            foreach (Patient cur in config.Patients)
+            {
                 // this list is only kept for overview of the programmer. its contents are never used by the code.
                 patients.Add(cur);
 
