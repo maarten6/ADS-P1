@@ -52,8 +52,8 @@ namespace FVA
 
             // debug info hospital overview
             DebugPrint("\n---------------------------------------------------------------------------------------\n");
-            /*foreach (Hospital h in hospitals)
-                DebugPrint(h.ToString());*/
+            foreach (Hospital h in hospitals)
+                DebugPrint(h.ToString());
         }
 
         // constructor for solving generated testcases
@@ -95,7 +95,7 @@ namespace FVA
                 hospital.GetSlots(shot1List, PTIMEFIRST, patient.FirstDoseFrom, patient.FirstDoseTo);
             }
 
-            shot1List.OrderBy(item => item.StartTime); // TODO: is this needed?
+            //shot1List.OrderBy(item => item.StartTime); // TODO: is this needed?
             int timeSlots = PTIMEFIRST + PTIMESECOND;
             int maxScore = Int32.MinValue;
 
@@ -106,6 +106,7 @@ namespace FVA
                 p1after = 0,
                 p2before = 0,
                 p2after = 0;
+
 
             foreach (TimeSlot timeslot1 in shot1List)
             {
@@ -138,9 +139,14 @@ namespace FVA
                         maxScore = score;
                         ts1 = timeslot1;
                         ts2 = timeslot2;
+                        if (maxScore == 12) break;
                     }
                 }
+
+                if (maxScore == 12) break;
             }
+
+
             if (ts1 == null || ts2 == null)
             {
                 hospitals.Add(new Hospital(hospitals.Count()));
@@ -206,13 +212,15 @@ namespace FVA
             int before = 0,
                 after = 0;
 
+            int dumbthing = Math.Max(schedule.Count - 1, latestPatient + LONGESTSHOT);
+
             if (t.StartTime != 0)
                 for (int i = t.StartTime - 1; i >= 0 && schedule[i] == 0; --i) ++before;
             if (t.EndTime < schedule.Count)
                 for (int i = t.EndTime; i < schedule.Count && schedule[i] == 0; ++i)
                 {
                     ++after;
-                    if (i == schedule.Count - 1)
+                    if (i >= dumbthing)
                         after = int.MaxValue;
                 }
 
@@ -285,28 +293,19 @@ namespace FVA
             }
 
             if (curlen >= shotlength)
-                for (int i = shotend - curlen + 1; i <= shotend - shotlength + 1; ++i)
+                for (int i = Math.Min(shotend, maxShotLength) - curlen + 1; i <= Math.Min(shotend, maxShotLength) - shotlength + 1; ++i)
                     result.Add(new TimeSlot(this.ID, i, shotlength));
         }
 
         public override string ToString()
         {
             StringBuilder res = new StringBuilder();
-            char[] alfabet = "abcdefghijklmnopqrstuvwxyz!@#$%^&*?/~-+|:;'<>".ToCharArray();
+            // char[] alfabet = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_=+[]{};:'\",.<>/?|\\`~".ToCharArray();
                 
-                foreach (int item in schedule)
-                {
-                if (item == 0)
-                    res.Append("-");
-                    else if (item <= 9)
-                        res.Append(item);
-
-                    else if (item < alfabet.Length + 9)
-                        res.Append(alfabet[item - 9]);
-
-                    else
-                        res.Append(item);
-                }
+            foreach (int item in schedule)
+                if (item == 0) res.Append("-");
+                else res.Append((char)item);
+            
    
             return res.ToString();
         }
