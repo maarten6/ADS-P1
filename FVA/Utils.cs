@@ -9,12 +9,18 @@ namespace FVA
     public static class Utils
     {
         public const bool DEBUG = true;
+        public const bool TESTCASEZEROBASED = true;
+
+        public static Random PRNG = new Random(69);
+
         // note that offline == !online
         public static bool OFFLINE;
         // processing time of the first dose
         public static int PTIMEFIRST;
         // processing time of the second dose
         public static int PTIMESECOND;
+        // maximum shotlength
+        public static int LONGESTSHOT;
         // gap between first and second dose
         public static int GAP;
 
