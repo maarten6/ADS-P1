@@ -16,6 +16,8 @@ namespace FVA
 
         private List<Hospital> hospitals;
 
+       
+
         // TODO IDEA
         //1: 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
         //2: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
@@ -50,8 +52,8 @@ namespace FVA
 
             // debug info hospital overview
             DebugPrint("\n---------------------------------------------------------------------------------------\n");
-            foreach (Hospital h in hospitals)
-                DebugPrint(h.ToString());
+            /*foreach (Hospital h in hospitals)
+                DebugPrint(h.ToString());*/
         }
 
         // constructor for solving generated testcases
@@ -146,6 +148,7 @@ namespace FVA
             }
             else
             {
+                
                 hospitals[ts1.Hospital].Schedule(patient.ID, ts1);
                 hospitals[ts2.Hospital].Schedule(patient.ID, ts2);
                 output.Append((ts1.StartTime + 1) + ", " + (ts1.Hospital + 1) + ", " + (ts2.StartTime + 1) + ", " + (ts2.Hospital + 1) + "\n");
@@ -187,11 +190,13 @@ namespace FVA
     {
         private int ID;
         public List<int> schedule;
+        private int latestPatient;
 
         public Hospital(int id)
         {
             ID = id;
-            schedule = new List<int>();
+            schedule = new List<int>(); 
+            latestPatient = 0;
         }
 
 
@@ -213,6 +218,7 @@ namespace FVA
 
             return new Tuple<int, int>(before, after);
         }
+
         public Tuple<int, int, int, int> Distances(TimeSlot t1, TimeSlot t2)
         {
             if (schedule[t2.StartTime] != 0) throw new Exception("This should never happen");
@@ -242,6 +248,7 @@ namespace FVA
 
         public void Schedule(int PatientID, TimeSlot ts)
         {
+            latestPatient = Math.Max(latestPatient, ts.EndTime);
             ExtendSchedule(ts.EndTime);
 
             PutSlotInSchedule(PatientID, ts.StartTime, ts.EndTime);
@@ -262,7 +269,8 @@ namespace FVA
             ExtendSchedule(shotend);
 
             int curlen = 0;
-            for (int currentslot = shotstart; currentslot <= shotend && currentslot < schedule.Count; currentslot++)
+            int maxShotLength = shotstart +  latestPatient + LONGESTSHOT;
+            for (int currentslot = shotstart; currentslot <= shotend && currentslot <= maxShotLength; currentslot++)
             {
                 if (schedule[currentslot] != 0)
                 {

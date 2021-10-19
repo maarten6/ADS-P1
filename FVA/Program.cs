@@ -17,6 +17,8 @@ namespace FVA
                     throw new ArgumentException("Input was not in the correct format.");
                 }
 
+                Utils.LONGESTSHOT = Math.Max(Utils.PTIMEFIRST, Utils.PTIMESECOND);
+
                 string line = Console.ReadLine();
 
                 Utils.OFFLINE = int.TryParse(line, out int patientCnt);

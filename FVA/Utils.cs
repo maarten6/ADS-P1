@@ -19,6 +19,8 @@ namespace FVA
         public static int PTIMEFIRST;
         // processing time of the second dose
         public static int PTIMESECOND;
+        // maximum shotlength
+        public static int LONGESTSHOT;
         // gap between first and second dose
         public static int GAP;
 
