@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+import pathlib
 
 """Offline algorithm of the Federal Vaccination Agency, to find the best schedule for vaccinating the population of a small country."""
 from ortools.sat.python import cp_model
@@ -93,9 +95,9 @@ def parsePatient(line, p1, p2, gap):
     patientValues = [int(x.strip()) for x in line.split(',')]
     return Patient(patientValues[0], patientValues[1], patientValues[2], patientValues[3], p1, p2, gap)
 
-def parseInput():
+def parseInput(data):
     """Turns the input into a ProgramInput object"""
-    p1 = int(input())
+    p1 = int(data)
     p2 = int(input())
     gap = int(input())
     numPatients = int(input())
@@ -170,9 +172,78 @@ def SolveILP(programInput):
         for patient in patientVariables:
             patient.printSolutionLine(solver)
         print(f"{solver.Value(highestMachineNumber)}")
+        return f"{solver.Value(highestMachineNumber)}"
     else:
         print("Could not find a solution")
+        return "-1"
+
+    
     
 
+def runAllTests():
+    dirhere = str(pathlib.Path(__file__).parent.resolve())
+    # Folder Path
+    path =  dirhere + "\\offlineproblems\\"
+
+    # Change the directory
+    os.chdir(path)
+
+    # Read text File
+
+
+    def read_text_file(file_path):
+        with open(file_path, 'r') as f:
+            inputlist = f.read().splitlines()
+
+            print("LIST STARTS HERE-=-------------------------------------------------------------------")
+            for x in range(len(inputlist)):
+                print (inputlist[x])
+
+            print("LIST ENDS HERE-=-------------------------------------------------------------------")
+
+            p1 = int(inputlist[0])
+            p2 = int(inputlist[1])
+            gap = int(inputlist[2])
+            numPatients = int(inputlist[3])
+            patients = []
+            maxtime = [0] * 2
+            mintime = [float('inf')] * 2 # Initiate minimum times as infinity
+
+            for i in range(0, numPatients):
+                patient = parsePatient(inputlist[4 + i], p1, p2, gap)
+                patients.append(patient)
+                mintime[0] = min(mintime[0], patient.firstPossible[0])
+                maxtime[0] = max(maxtime[0], patient.lastPossible[0])
+                mintime[1] = min(mintime[1], patient.firstPossible[1])
+                maxtime[1] = max(maxtime[1], patient.lastPossible[1])
+                
+            if numPatients == 0:
+                print(0)
+                #exit()
+                
+            print ("SOLUTION BELOW-------------------------------------------------------------------------")
+            if numPatients < 20:
+                print(SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime)))
+            print ("SOLUTION ABOVE-------------------------------------------------------------------------")
+
+            
+
+
+    # iterate through all file
+    for file in os.listdir():
+        # Check whether file is in text format or not
+        if file.endswith(".txt"):
+            file_path = f"{path}{file}"
+
+            # call read text file function
+            read_text_file(file_path)
+
+            
+
 if __name__ == "__main__":
-    SolveILP(parseInput())
+    data = input()
+
+    if data == "":
+        runAllTests()
+    else:
+        SolveILP(parseInput(data))
