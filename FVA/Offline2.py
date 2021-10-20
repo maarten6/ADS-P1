@@ -2,6 +2,7 @@
 
 """Offline algorithm of the Federal Vaccination Agency, to find the best schedule for vaccinating the population of a small country."""
 from ortools.sat.python import cp_model
+import math
 
 class Patient:
     def __init__(self, r, d, x, l, p1, p2, gap):
@@ -24,7 +25,7 @@ class PatientVariables:
         # The timeslot on which to schedule dose 1
         self.starttimeDose1 = model.NewIntVar(patient.firstPossible[0], patient.lastPossible[0], "starttimeDose1")
         # The timeslot on which the first dose processing time has ended
-        self.endtimeDose1 = model.NewIntVar(patient.r, patient.d, "endtimeDose1")
+        self.endtimeDose1 = model.NewIntVar(patient.r + programInput.p1 - 1, patient.d, "endtimeDose1")
         # The interval from the starttime timeslot to the timeslot after the endtime. The reasoning for this is as follows:
         # Because we look at timeslots, and not a continous timeline, when p1 = 1, starttime==endtime. This means that the interval will
         # be empty, and thus when checking overlap with other intervals it won't find any. This is because when checking overlapping 
@@ -39,12 +40,11 @@ class PatientVariables:
         # The timeslot on which to schedule dose 2
         self.starttimeDose2 = model.NewIntVar(patient.firstPossible[1], patient.lastPossible[1], "starttimeDose2")
         # The timeslot on which the first dose processing time has ended
-        self.endtimeDose2 = model.NewIntVar(patient.firstPossible[1], patient.lastPossible[1] + programInput.p2, "endtimeDose2")
+        self.endtimeDose2 = model.NewIntVar(patient.firstPossible[1] + programInput.p2 - 1, patient.lastPossible[1] + programInput.p2 - 1, "endtimeDose2")
          # The interval from the starttime timeslot to the timeslot after the endtime.
         self.intervalDose2 = model.NewIntervalVar(self.starttimeDose2, programInput.p2, self.endtimeDose2 + 1, "intervalDose2")
 
         # The starttime for dose 2 must lay withing the feasible schedule, it must be greater than T1 + p1 + gap + x
-        # @zazey klopt deze grens nu of is het <= ??
         model.Add(self.endtimeDose1 + programInput.gap + patient.x < self.starttimeDose2)
         # To force the upper bound for the starttime, we restrict the endtime. It must be less than, or equal to T1 + p1 + gap + x + l.
         model.Add(self.endtimeDose2 <= self.endtimeDose1 + programInput.gap + patient.x + patient.l)
@@ -150,13 +150,18 @@ def SolveILP(programInput):
     #  2            |-----|=====|-----|
     #  1      |-----------|-----------|
     # m\t     |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8
-    # This example shows p=2. We notice an overlap occurs when m=2 and t1=[2,4] and t2=[3,5]. Note: that the indices here indicate the start of a
+    # This example shows p=2. We notice an overlap occurs when m=2 and t1=[2,3+1] and t2=[3,4+1]. Note: that the indices here indicate the start of a
     # timeslot, and as the endtime spans a full timeslot, it will be set to the beginning of the next timeslot, but it won't overlap with that.
     model.AddNoOverlap2D(intervals, machineIntervals)
 
     # Create a variable that holds the highest machine number that was found, we will minimise this later
     highestMachineNumber = model.NewIntVar(1, len(patients), "M")
     model.AddMaxEquality(highestMachineNumber, machines)
+
+    totalAvailableForDose1 = (programInput.maxtime[0] + programInput.p1) - programInput.mintime[0]
+    fittedCount = totalAvailableForDose1 / programInput.p1 # Max amount of processings that can be done sequentially on 1 machine
+    minMachines = math.ceil(len(patients)/fittedCount)
+    model.Add(minMachines <= highestMachineNumber)
 
     # Minimise the highest machine number. The reason that we can use this maximum, is that every machine is used only over a processing time.
     # (This is enforced by the overlap constraint). This means that any maximum number that we see, must be the number of concurrent machine that are
@@ -166,7 +171,7 @@ def SolveILP(programInput):
 
     # Solve the model and print the solution
     status = solver.Solve(model)
-    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+    if status == cp_model.OPTIMAL:
         for patient in patientVariables:
             patient.printSolutionLine(solver)
         print(f"{solver.Value(highestMachineNumber)}")
