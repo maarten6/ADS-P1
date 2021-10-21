@@ -158,17 +158,6 @@ def SolveILP(programInput):
     highestMachineNumber = model.NewIntVar(1, len(patients), "M")
     model.AddMaxEquality(highestMachineNumber, machines)
 
-    totalAvailableForDose1 = (programInput.maxtime[0] + programInput.p1) - programInput.mintime[0]
-    fittedCount1 = totalAvailableForDose1 / programInput.p1 # Max amount of processings that can be done sequentially on 1 machine
-    minMachines1 = math.ceil(len(patients)/fittedCount1)
-
-    totalAvailableForDose2 = (programInput.maxtime[1] + programInput.p2) - programInput.mintime[1]
-    fittedCount2 = totalAvailableForDose2 / programInput.p2 # Max amount of processings that can be done sequentially on 1 machine
-    minMachines2 = math.ceil(len(patients)/fittedCount2)
-
-    minMachines = max(minMachines1, minMachines2)
-    model.Add(minMachines <= highestMachineNumber)
-
     # Minimise the highest machine number. The reason that we can use this maximum, is that every machine is used only over a processing time.
     # (This is enforced by the overlap constraint). This means that any maximum number that we see, must be the number of concurrent machine that are
     # required at a single point in time. This is true because we minimise M, thus the solver will try to minimise the machine numbers. The only way a
