@@ -190,16 +190,20 @@ def runAllTests():
 
     # Read text File
 
-
-    def read_text_file(file_path):
-        with open(file_path, 'r') as f:
+   
+    list = []
+   
+    def read_text_file(path,file):
+        with open(f"{path}{file}", 'r') as f:
             inputlist = f.read().splitlines()
+            
+                  
 
-            print("LIST STARTS HERE-=-------------------------------------------------------------------")
-            for x in range(len(inputlist)):
-                print (inputlist[x])
+            # print("LIST STARTS HERE-=-------------------------------------------------------------------")
+            # for x in range(len(inputlist)):
+            #     print (inputlist[x])
 
-            print("LIST ENDS HERE-=-------------------------------------------------------------------")
+            # print("LIST ENDS HERE-=-------------------------------------------------------------------")
 
             p1 = int(inputlist[0])
             p2 = int(inputlist[1])
@@ -221,22 +225,27 @@ def runAllTests():
                 print(0)
                 #exit()
                 
-            print ("SOLUTION BELOW-------------------------------------------------------------------------")
-            if numPatients < 20:
-                print(SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime)))
-            print ("SOLUTION ABOVE-------------------------------------------------------------------------")
-
             
+            if numPatients < 20:
+                solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))
+                print(solution)
+                
+                list.append((file,solution))    
+           
 
+    
 
     # iterate through all file
     for file in os.listdir():
         # Check whether file is in text format or not
         if file.endswith(".txt"):
-            file_path = f"{path}{file}"
-
+            
+            
             # call read text file function
-            read_text_file(file_path)
+            read_text_file(path,file)
+    
+           
+    print(list, ' ')
 
             
 
