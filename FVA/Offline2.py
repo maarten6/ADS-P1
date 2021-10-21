@@ -159,8 +159,14 @@ def SolveILP(programInput):
     model.AddMaxEquality(highestMachineNumber, machines)
 
     totalAvailableForDose1 = (programInput.maxtime[0] + programInput.p1) - programInput.mintime[0]
-    fittedCount = totalAvailableForDose1 / programInput.p1 # Max amount of processings that can be done sequentially on 1 machine
-    minMachines = math.ceil(len(patients)/fittedCount)
+    fittedCount1 = totalAvailableForDose1 / programInput.p1 # Max amount of processings that can be done sequentially on 1 machine
+    minMachines1 = math.ceil(len(patients)/fittedCount1)
+
+    totalAvailableForDose2 = (programInput.maxtime[1] + programInput.p2) - programInput.mintime[1]
+    fittedCount2 = totalAvailableForDose2 / programInput.p2 # Max amount of processings that can be done sequentially on 1 machine
+    minMachines2 = math.ceil(len(patients)/fittedCount2)
+
+    minMachines = max(minMachines1, minMachines2)
     model.Add(minMachines <= highestMachineNumber)
 
     # Minimise the highest machine number. The reason that we can use this maximum, is that every machine is used only over a processing time.
