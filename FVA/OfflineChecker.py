@@ -4,6 +4,7 @@
 import Offline2 as offline
 import sys
 import os
+from time import perf_counter
 
 
 class PatientOutput:
@@ -26,7 +27,9 @@ if __name__ == "__main__":
 
     sys.stdout = fd
     programInput = offline.parseInput()
+    start = perf_counter()
     offline.SolveILP(programInput)
+    end = perf_counter()
     fd.close()
     sys.stdout = oldOut
 
@@ -44,12 +47,11 @@ if __name__ == "__main__":
             pass
 
     print(f"Total machines: {lines[len(lines)-2]}")
-
+    allConsistent = True
     for i in range(0, len(patients)):
         if not patients[i].checkRange(programInput.patients[i], programInput):
-            print(f"Inconsistency with job {i}")
-        else:
-            print(f"Consistency with job {i}")
+            print(f"Job {i} scheduled outside its feasible schedule")
+            allConsistent = False
         
         allTimesInUse = range(patients[i].T1, patients[i].T1 + programInput.p1)
         for time in allTimesInUse:
@@ -65,3 +67,7 @@ if __name__ == "__main__":
             else:
                 machinesInUse[patients[i].M2][time] = i
     
+    if allConsistent:
+        print("All jobs consistent")
+    print(f"Solver took a total of {end - start} seconds")
+    print(f"Checker took a total of {perf_counter() - end} seconds")
