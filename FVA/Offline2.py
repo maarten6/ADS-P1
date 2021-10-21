@@ -192,7 +192,7 @@ def runAllTests():
 
    
     list = []
-   
+    filenames = []
     def read_text_file(path,file):
         with open(f"{path}{file}", 'r') as f:
             inputlist = f.read().splitlines()
@@ -225,13 +225,13 @@ def runAllTests():
                 print(0)
                 #exit()
                 
-            
-            if numPatients < 20:
+            print ("SOLUTION BELOW-------------------------------------------------------------------------")
+            if numPatients < 70:
                 solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))
                 print(solution)
                 
                 list.append((file,solution))    
-           
+            print ("SOLUTION ABOVE-------------------------------------------------------------------------")
 
     
 
