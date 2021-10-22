@@ -57,7 +57,7 @@ namespace FVA
         }
 
         // constructor for solving generated testcases
-        public Online(TestConfiguration config)
+        public Online(Configuration config)
         {
             patients = new List<Patient>();
             hospitals = new List<Hospital>();

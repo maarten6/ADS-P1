@@ -6,18 +6,24 @@ using System.Threading.Tasks;
 
 namespace FVA
 {
-    public class TestConfiguration
+    public class Configuration
     {
-        public  List<Patient> Patients { get; private set; }
-
-        public TestConfiguration(int firstshot, int secondshot, int gap, int patients, PatientConfiguration pc)
+        public List<Patient> Patients { get; protected set; }
+        public Configuration(int firstshot, int secondshot, int gap)
         {
             Utils.PTIMEFIRST = firstshot;
             Utils.PTIMESECOND = secondshot;
             Utils.GAP = gap;
 
             this.Patients = new List<Patient>();
+        }
+        public void AddPatient(Patient patient) => this.Patients.Add(patient);
+    }
 
+    public class RandomConfiguration : Configuration
+    {
+        public RandomConfiguration(int firstshot, int secondshot, int gap, int patients, PatientConfiguration pc) : base(firstshot, secondshot, gap)
+        {
             for (int i = 1; i <= patients; ++i)
                 this.Patients.Add(pc.GeneratePatient(i));
         }
@@ -68,4 +74,40 @@ namespace FVA
             return new Patient(ID, firstDoseFrom, firstDoseTo, delay, secondDoseInterval);
         }
     }
+
+    public class TestResult : IComparable
+    {
+        public string FileName { get; private set; }
+        public int OfflineScore { get; private set; }
+        public int OnlineScore { get; private set; }
+        private int scoredelta;
+
+        public TestResult(string line)
+        {
+            string[] data = line.Split(' ');
+
+            FileName = data[0];
+            if (int.TryParse(data[1], out int score))
+                OfflineScore = score;
+            else
+                throw new ArgumentException();
+        }
+
+        public void SetOnlineResult(Online online)
+        {
+            this.OnlineScore = online.HospitalCNT;
+            this.scoredelta = this.OnlineScore - this.OfflineScore;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is TestResult tc)
+                return -this.scoredelta.CompareTo(tc.scoredelta);
+
+            throw new ArgumentException();
+        }
+
+        public override string ToString() => $"{FileName}({scoredelta}): {OfflineScore} VS {OnlineScore}";
+    }
+
 }
