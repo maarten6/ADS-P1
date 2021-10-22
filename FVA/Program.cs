@@ -9,8 +9,9 @@ namespace FVA
     {
         static bool
             CONSOLEINPUT = false,
-            RANDOM = false,
-            FILEINPUT = true;
+            RUNRANDOM = false,
+            GENERATERANDOM = true,
+            FILEINPUT = false;
                     
         static void Main(string[] args)
         {
@@ -51,7 +52,7 @@ namespace FVA
                         new Online(new Patient(0, line));
                 }
             }
-            else if (RANDOM)
+            else if (RUNRANDOM)
             {
                 int patients = 8;
                 PatientConfiguration pc = new PatientConfiguration(0, 15, 0, 20, 0, 5, 0, 5);
@@ -76,6 +77,44 @@ namespace FVA
                 }
 
                 Utils.DebugPrint($"worst found: {maxhospitalsseen}");
+            }
+            else if (GENERATERANDOM)
+            {
+                int generateX = 2;
+
+                int shot1 = 3,
+                    shot2 = 3,
+                    gap = 0,
+                    patients = 8;
+
+                PatientConfiguration pc = new PatientConfiguration(0, 15, 0, 20, 0, 5, 0, 5);
+                RandomConfiguration config;
+                StringBuilder testcasestringOffline, testcasestringOnline;
+
+                for (int i = 0; i < generateX; ++i)
+                {
+                    // patients = Utils.PRNG.Next(5, 8); // set integers can be randomised like so
+
+                    config = new RandomConfiguration(shot1, shot2, gap, patients, pc);
+
+                    testcasestringOffline = new StringBuilder();
+                    testcasestringOnline = new StringBuilder();
+                    testcasestringOffline.Append($"{shot1}\n{shot2}\n{gap}\n{patients}\n");
+                    testcasestringOnline.Append($"{shot1}\n{shot2}\n{gap}\n");
+
+                    foreach (Patient p in config.Patients)
+                    {
+                        string ps = p.ToString() + "\n";
+                        testcasestringOffline.Append(ps);
+                        testcasestringOnline.Append(ps);
+                    }
+
+                    testcasestringOnline.Append("x");
+
+                    FileHandler.WriteTestCase(false, $"{patients}-{i}", testcasestringOffline.ToString());
+                    FileHandler.WriteTestCase(true, $"{patients}-{i}", testcasestringOnline.ToString());
+                }
+
             }
             else if (FILEINPUT)
             {

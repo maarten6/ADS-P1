@@ -15,16 +15,9 @@ namespace FVA
             INPUTLOCATION = "INPUT",
             OUTPUTLOCATION = "OUTPUT";
 
-        public static void WriteResults(string result) => File.WriteAllText(ROOT + OUTPUTLOCATION + EXTENTION, result);
-        public static void WriteResults(IEnumerable<string> results)
-        {
-            var sb = new StringBuilder();
-
-            foreach (string result in results)
-                sb.Append(result + "\n");
-
-            WriteResults(sb.ToString());
-        }
+        private static void WriteToFile(string path, string result) => File.WriteAllText(ROOT + path + EXTENTION, result);
+        public static void WriteResults(string results) => WriteToFile(OUTPUTLOCATION, results);
+        public static void WriteTestCase(bool online, string name, string testcase) => WriteToFile("generated/" + (online ? "online/" : "offline/") + name, testcase);
 
         public static IEnumerable<string> ReadLines(string filename)
         {
