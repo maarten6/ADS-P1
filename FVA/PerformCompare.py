@@ -58,30 +58,33 @@ if __name__ == "__main__":
 
         p.join(15)
 
+        print("New (CP-SAT) algorithm:")
         if p.is_alive():
             print("Took to long...")
             p.kill()
             p.join()
-        
-        avgNew = avgTime.value
-        resultNew = result.value
-        print("New (CP-SAT) algorithm:")
-        print(resultNew)
-        print(f"Avg: {avgNew}")
+            resultNew = "?"
+        else: 
+            avgNew = avgTime.value
+            resultNew = result.value
+            print(resultNew)
+            print(f"Avg: {avgNew}")
 
         p=mp.Process(target = evaluateFileOld, args = (programInput, avgTime, result))
         p.start()
 
         p.join(15)
 
+        print("Old (ILP) algorithm:")
         if p.is_alive():
             print("Took to long...")
             p.kill()
             p.join()
-
-        avgOld = avgTime.value
-        resultOld = result.value
-        print("Old (ILP) algorithm:")
-        print(resultOld)
-        print(f"Avg: {avgOld}")
-        print(f"On average, new one was {avgOld / avgNew} times faster than old one\n\n\n")
+            resultOld = "?"
+        else:
+            avgOld = avgTime.value
+            resultOld = result.value
+            print(resultOld)
+            print(f"Avg: {avgOld}")
+        if resultOld == resultNew == 'S':
+            print(f"On average, new one was {avgOld / avgNew} times faster than old one\n\n\n")
