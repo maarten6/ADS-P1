@@ -7,6 +7,8 @@ import sys
 import os
 from time import perf_counter
 import multiprocessing as mp
+import numpy as np
+import pandas as pd
 
 def evaluateFileOld(programInput, avgTime, result):
     evaluateFile(offlineOld, programInput, avgTime, result)
@@ -35,15 +37,24 @@ def evaluateFile(module, programInput, avgTime, result):
     avgTime.value = sum(times) / len(times)
 
 if __name__ == "__main__":
+    #open and read the file after the appending:
+    f = open("tableOffline.txt", "r")
+    print(f.read())
 
     filenames = next(os.walk("Offline/"), (None, None, []))[2]  # [] if no file
+    rows = []
+    df = pd.DataFrame()
+
     for file in filenames:
+        row = []
         print(f"==========={file}==========")
         oldIn = sys.stdin
         oldOut = sys.stdout
-
+        
         if (file == "1000000.txt"):
             continue
+
+        row.append(file)
         # Start by reading and parsing the file
         fin = open(f"Offline/{file}", "r")
         sys.stdin = fin
@@ -64,11 +75,13 @@ if __name__ == "__main__":
             p.kill()
             p.join()
             resultNew = "?"
+            CPSAT = 'X'
         else: 
             avgNew = avgTime.value
             resultNew = result.value
             print(resultNew)
             print(f"Avg: {avgNew}")
+            CPSAT = round(avgNew,3)
 
         p=mp.Process(target = evaluateFileOld, args = (programInput, avgTime, result))
         p.start()
@@ -81,10 +94,21 @@ if __name__ == "__main__":
             p.kill()
             p.join()
             resultOld = "?"
+            LS = 'X'
         else:
             avgOld = avgTime.value
             resultOld = result.value
             print(resultOld)
             print(f"Avg: {avgOld}")
+            LS = round(avgOld,3)
         if resultOld == resultNew == 'S':
+            speedup = round(avgOld / avgNew, 3)
             print(f"On average, new one was {avgOld / avgNew} times faster than old one\n\n\n")
+        else: 
+            speedup = '-'
+        row = pd.DataFrame({'Filename': [file], 'LS': [LS], 'CP-SAT': [CPSAT], 'LS/CP-SAT': [speedup]})
+        df = df.append(row, ignore_index=True)
+
+    f = open('tableOffline.txt', 'w')
+    f.write(df.to_latex(index=False))
+    f.close()

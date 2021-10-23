@@ -52,12 +52,12 @@ def parseInput():
         maxtime[0] = max(maxtime[0], patient.lastPossible[0])
         mintime[1] = min(mintime[1], patient.firstPossible[1])
         maxtime[1] = max(maxtime[1], patient.lastPossible[1])
-    if numPatients == 0:
-        print(0)
-        exit()
     return ProgramInput(p1, p2, gap, patients, mintime, maxtime)
 
 def SolveILP(programInput):
+    if len(programInput.patients) == 0:
+        print(0)
+        exit()
     # [START solver]
     # Create the mip solver with the SCIP backend.
     solver = pywraplp.Solver.CreateSolver('SCIP')
