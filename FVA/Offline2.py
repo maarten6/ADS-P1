@@ -2,7 +2,6 @@
 
 """Offline algorithm of the Federal Vaccination Agency, to find the best schedule for vaccinating the population of a small country."""
 from ortools.sat.python import cp_model
-import math
 
 class Patient:
     def __init__(self, r, d, x, l, p1, p2, gap):
@@ -164,6 +163,9 @@ def SolveILP(programInput):
     # machine cannot be lower is if that time was already taken up by another job.
     model.Minimize(highestMachineNumber)
 
+    # Set time limit to 5 minutes
+    solver.parameters.max_time_in_seconds = 5
+
     # Solve the model and print the solution
     status = solver.Solve(model)
     if status == cp_model.OPTIMAL:
@@ -172,7 +174,9 @@ def SolveILP(programInput):
         print(f"{solver.Value(highestMachineNumber)}")
     else:
         print("Could not find a solution")
+        return "-"
     
+    return "S"
 
 if __name__ == "__main__":
     SolveILP(parseInput())

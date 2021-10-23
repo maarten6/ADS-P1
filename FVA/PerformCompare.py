@@ -6,37 +6,82 @@ import Offline2 as offline
 import sys
 import os
 from time import perf_counter
+import multiprocessing as mp
 
-if __name__ == "__main__":
-    #os.remove('output.txt')
-    programInput = offline.parseInput()
-    oldTimes = []
-    newTimes = []
+def evaluateFileOld(programInput, avgTime, result):
+    evaluateFile(offlineOld, programInput, avgTime, result)
 
+def evaluateFileNew(programInput, avgTime, result):
+    evaluateFile(offline, programInput, avgTime, result)
+
+def evaluateFile(module, programInput, avgTime, result):
     oldOut = sys.stdout
+
+    times = []
+
+    # Run the solvers a given amount of times on the input, store total time they took
     fd = open(os.devnull, 'w')
     sys.stdout = fd
-    for i in range(0, 10):
+    for i in range(0, 1):
         start = perf_counter()
-        offline.SolveILP(programInput)
+        result.value = module.SolveILP(programInput)
         end = perf_counter()
-        newTimes.append(end - start)
-
-        start = perf_counter()
-        offlineOld.SolveILP(programInput)
-        end = perf_counter()
-        oldTimes.append(end - start)
+        times.append(end - start)
 
     fd.close()
     sys.stdout = oldOut
 
-    print("Old (ILP) algorithm:")
-    print(oldTimes)
-    avgOld = sum(oldTimes)/len(oldTimes)
-    print(f"Avg: {avgOld}")
-    print()
-    print("New (CP-SAT) algorithm:")
-    print(newTimes)
-    avgNew = sum(newTimes)/len(newTimes)
-    print(f"Avg: {avgNew}")
-    print(f"On avg, new took {avgNew / avgOld} of time old takes")
+    # Print statistics
+    avgTime.value = sum(times) / len(times)
+
+if __name__ == "__main__":
+
+    filenames = next(os.walk("Offline/"), (None, None, []))[2]  # [] if no file
+    for file in filenames:
+        print(f"==========={file}==========")
+        oldIn = sys.stdin
+        oldOut = sys.stdout
+
+        if (file == "1000000.txt"):
+            continue
+        # Start by reading and parsing the file
+        fin = open(f"Offline/{file}", "r")
+        sys.stdin = fin
+        programInput = offline.parseInput()
+        fin.close()
+        sys.stdin = oldIn
+
+        avgTime = mp.Value("d", -1, lock=False)
+        result = mp.Value("u", '?', lock=False)
+        p=mp.Process(target = evaluateFileNew, args = (programInput, avgTime, result))
+        p.start()
+
+        p.join(15)
+
+        if p.is_alive():
+            print("Took to long...")
+            p.kill()
+            p.join()
+        
+        avgNew = avgTime.value
+        resultNew = result.value
+        print("New (CP-SAT) algorithm:")
+        print(resultNew)
+        print(f"Avg: {avgNew}")
+
+        p=mp.Process(target = evaluateFileOld, args = (programInput, avgTime, result))
+        p.start()
+
+        p.join(15)
+
+        if p.is_alive():
+            print("Took to long...")
+            p.kill()
+            p.join()
+
+        avgOld = avgTime.value
+        resultOld = result.value
+        print("Old (ILP) algorithm:")
+        print(resultOld)
+        print(f"Avg: {avgOld}")
+        print(f"On average, new one was {avgOld / avgNew} times faster than old one\n\n\n")

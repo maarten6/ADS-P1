@@ -99,7 +99,7 @@ def SolveILP(programInput):
             dose1[job][timeslot] = [None] * machineUpperBound
         for timeslot in range (0, numTimeslotsDose2):
             dose2[job][timeslot] = [None] * machineUpperBound
-
+    print(numTimeslotsDose1 + numTimeslotsDose2)
     constraintZero = solver.Constraint(0, 0) # Constraint for variables that should sum up to zero
     # Create ILP variables
     for job in range (0, len(patients)):
@@ -174,7 +174,6 @@ def SolveILP(programInput):
         constraintFeasibleScheduleS = solver.Constraint(programInput.p1 + programInput.gap + patient.x, programInput.p1 + programInput.gap + patient.x + patient.l - programInput.p2)
         constraintFeasibleScheduleS.SetCoefficient(S, 1)
         constraintFeasibleScheduleS.SetCoefficient(T, -1)
-
     # [END variables]
 
     # [START constraints]
@@ -213,12 +212,15 @@ def SolveILP(programInput):
     #please use the –verify_solution flag to gain confidence about the numerical stability of your solution.
     # [END objective]
 
+    # Set time limit to 5 minutes
+    solver.SetTimeLimit(5000)
+
     # Solve the problem and print the solution.
     # [START print_solution]
     result = solver.Solve()
-    if result == solver.INFEASIBLE:
+    if result is not solver.OPTIMAL:
         print("Could not find solution.")
-        exit(1)
+        return "-"
 
     # For each patient, get their T and S value and print it out
     for job in range (0, len(patients)):
@@ -231,6 +233,7 @@ def SolveILP(programInput):
         print(f"{timeFirstDose}, {machineFirstDose}, {timeSecondDose}, {machineSecondDose}")
 
     print(int(M.solution_value()))
+    return "S"
     # [END print_solution]
 
 if __name__ == "__main__":
