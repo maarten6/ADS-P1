@@ -352,3 +352,6 @@ MigrationBackup/
 **/.DS_Store
 
 **/FVA/output.txt
+
+**/FVA/Offline
+**/FVA/Online
