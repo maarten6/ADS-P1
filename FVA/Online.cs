@@ -10,73 +10,44 @@ namespace FVA
     public class Online
     {
         public int HospitalCNT { get => hospitals.Count; }
-        private int patientCNT { get => patients.Count(); }
-        // not sure if this list is needed, but it will certainly be handy for debugging
-        private List<Patient> patients;
+        private int patientCNT = 0;
 
         private List<Hospital> hospitals;
-
-       
-
-        // TODO IDEA
-        //1: 1,1,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
-        //2: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
-        //3: 0,0,0,0,2,2,0,1,1,1,0,0,0,0,2,2,2
-        // n*n Matrix die per hospital timeslot afgaaat
 
         // constructor for solving the actual problem
         public Online(Patient firstpatient)
         {
-            patients = new List<Patient> { firstpatient };
-            hospitals = new List<Hospital> { new Hospital(0) };
+            hospitals = new List<Hospital>();
 
             StringBuilder output = new StringBuilder();
 
             Schedule(firstpatient, output);
 
             for (string line = Console.ReadLine(); line != "x"; line = Console.ReadLine())
-            {
-                Patient cur = new Patient(patientCNT, line);
+                Schedule(new Patient(++patientCNT, line), output);
 
-                // this list is only kept for overview of the programmer. its contents are never used by the code.
-                patients.Add(cur);
-
-                DebugPrint("Scheduling a patient.");
-                Schedule(cur, output);
-                DebugPrint("Done scheduling a patient");
-            }
-
-            // required output
-            output.Append(hospitals.Count().ToString());
-            Print(output.ToString());
-
-            // debug info hospital overview
-            DebugPrint("\n---------------------------------------------------------------------------------------\n");
-            foreach (Hospital h in hospitals)
-                DebugPrint(h.ToString());
+            PrintFullOutput(output);
         }
 
         // constructor for solving generated testcases
         public Online(Configuration config)
         {
-            patients = new List<Patient>();
             hospitals = new List<Hospital>();
+            patientCNT = config.Patients.Count;
 
             StringBuilder output = new StringBuilder();
 
             foreach (Patient cur in config.Patients)
-            {
-                // this list is only kept for overview of the programmer. its contents are never used by the code.
-                patients.Add(cur);
-
-                DebugPrint("Scheduling a patient.");
                 Schedule(cur, output);
-                DebugPrint("Done scheduling a patient");
-            }
 
+            PrintFullOutput(output);
+        }
+
+        private void PrintFullOutput(StringBuilder sb)
+        {
             // required output
-            output.Append(hospitals.Count().ToString());
-            Print(output.ToString());
+            sb.Append(hospitals.Count().ToString());
+            Print(sb.ToString());
 
             // debug info hospital overview
             DebugPrint("\n---------------------------------------------------------------------------------------\n");
@@ -87,36 +58,30 @@ namespace FVA
         private void Schedule(Patient patient, StringBuilder output)
         {
             List<TimeSlot> shot1List = new List<TimeSlot>();
-            List<TimeSlot> shot2List = new List<TimeSlot>();
-
-            foreach (Hospital hospital in hospitals)
-            {
-                hospital.ExtendSchedule(patient); //  TODO IDEA: this same number is calculated for every hospital. Then again, not so much hospitals.
-                hospital.GetSlots(shot1List, PTIMEFIRST, patient.FirstDoseFrom, patient.FirstDoseTo);
-            }
-
-            //shot1List.OrderBy(item => item.StartTime); // TODO: is this needed?
-            int timeSlots = PTIMEFIRST + PTIMESECOND;
-            int maxScore = Int32.MinValue;
+            List<TimeSlot> shot2List;
 
             TimeSlot ts1 = null,
                      ts2 = null;
 
-            int p1before = 0,
-                p1after = 0,
-                p2before = 0,
-                p2after = 0;
+            int maxScore = Int32.MinValue;
+            int p1before, p1after, p2before, p2after, score;
 
-
+            // get possibilities for the first jab
+            foreach (Hospital hospital in hospitals)
+                hospital.GetSlots(shot1List, PTIMEFIRST, patient.FirstDoseFrom, patient.FirstDoseTo);
+            
+            // explore possibilities for the first jab
             foreach (TimeSlot timeslot1 in shot1List)
             {
                 shot2List = new List<TimeSlot>();
                 int startShot2 = timeslot1.EndTime + GAP + patient.Delay;
                 int endShot2 = startShot2 + patient.SecondDoseInterval;
 
+                // get possibilities for the second jab
                 foreach (Hospital hospital in hospitals)
                     hospital.GetSlots(shot2List, PTIMESECOND, startShot2, endShot2);
 
+                // explore possibilities for the second jab
                 foreach (TimeSlot timeslot2 in shot2List)
                 {
                     if (timeslot1.Hospital == timeslot2.Hospital)
@@ -127,34 +92,32 @@ namespace FVA
                         (p2before, p2after) = hospitals[timeslot2.Hospital].Distances(timeslot2);
                     }
 
-                    int score = calcScore(p1before) + calcScore(p1after) + calcScore(p2before) + calcScore(p2after);
-
-
-
-                    /*Console.WriteLine(p1before + " " + p1after + " " + p2before + " " + p2after);*/
-                    //DebugPrint(timeslot1.StartTime + " " + timeslot2.StartTime + " Score:" + score);
+                    score = calcScore(p1before) + calcScore(p1after) + calcScore(p2before) + calcScore(p2after);
 
                     if (score > maxScore)
                     {
                         maxScore = score;
                         ts1 = timeslot1;
                         ts2 = timeslot2;
+
+                        // a score can never be higher dan 12
                         if (maxScore == 12) break;
                     }
                 }
 
+                // a score can never be higher dan 12
                 if (maxScore == 12) break;
             }
 
 
             if (ts1 == null || ts2 == null)
             {
+                // patient does not fit in existing hospitals
                 hospitals.Add(new Hospital(hospitals.Count()));
                 Schedule(patient, output);
             }
             else
             {
-                
                 hospitals[ts1.Hospital].Schedule(patient.ID, ts1);
                 hospitals[ts2.Hospital].Schedule(patient.ID, ts2);
                 output.Append((ts1.StartTime + 1) + ", " + (ts1.Hospital + 1) + ", " + (ts2.StartTime + 1) + ", " + (ts2.Hospital + 1) + "\n");
@@ -177,19 +140,6 @@ namespace FVA
 
             return Math.Max(calcScore(x - PTIMEFIRST), calcScore(x - PTIMEFIRST));
         }
-        /*        public int calcScore(int x)
-                {
-                    if (x == 0)
-                        return 3;
-                    //2 + 3 + 3 + 2 moet ook kunnen, TODO FIX
-                    if (x % (PTIMEFIRST + PTIMESECOND) == 0 || modulo(x) || modulo(x - PTIMEFIRST) || modulo(x - PTIMESECOND))
-                        return 2;
-                    return 0;
-                }
-                public bool modulo(int x)
-                {
-                    return (x % PTIMEFIRST == 0 || x % PTIMESECOND == 0);
-                }*/
     }
 
     public class Hospital
@@ -205,14 +155,12 @@ namespace FVA
             latestPatient = 0;
         }
 
-
-
         public Tuple<int, int> Distances(TimeSlot t)
         {
             int before = 0,
                 after = 0;
 
-            int dumbthing = Math.Max(schedule.Count - 1, latestPatient + LONGESTSHOT);
+            int lastshot = Math.Max(schedule.Count - 1, latestPatient + LONGESTSHOT);
 
             if (t.StartTime != 0)
                 for (int i = t.StartTime - 1; i >= 0 && schedule[i] == 0; --i) ++before;
@@ -220,7 +168,7 @@ namespace FVA
                 for (int i = t.EndTime; i < schedule.Count && schedule[i] == 0; ++i)
                 {
                     ++after;
-                    if (i >= dumbthing)
+                    if (i >= lastshot)
                         after = int.MaxValue;
                 }
 
@@ -305,7 +253,6 @@ namespace FVA
             foreach (int item in schedule)
                 if (item == 0) res.Append("-");
                 else res.Append((char)item);
-            
    
             return res.ToString();
         }
