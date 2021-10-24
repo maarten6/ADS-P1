@@ -226,7 +226,7 @@ def runAllTests():
                 #exit()
                 
             print ("SOLUTION BELOW-------------------------------------------------------------------------")
-            if numPatients < 70:
+            if numPatients < 120:
                 solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))
                 print(solution)
                 
