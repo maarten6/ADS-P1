@@ -231,7 +231,7 @@ def runAllTests():
                 print(solution)
                 
                 list.append((file,solution))    
-            print ("SOLUTION ABOVE-------------------------------------------------------------------------")
+            
 
     
 
@@ -244,8 +244,12 @@ def runAllTests():
             # call read text file function
             read_text_file(path,file)
     
-           
-    print(list, ' ')
+    f = open("output.txt", "w")
+    for i in list:
+        print(i[0]+ ' ' + i[1])
+        f.write(i[0]+ " " + i[1] + "\n")
+
+    #print(list, ' ')
 
             
 
