@@ -213,7 +213,7 @@ def SolveILP(programInput):
     # [END objective]
 
     # Set time limit to 30 minutes
-    solver.SetTimeLimit(1800)
+    solver.SetTimeLimit(1800000)
 
     # Solve the problem and print the solution.
     # [START print_solution]
