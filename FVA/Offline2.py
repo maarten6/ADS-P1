@@ -165,8 +165,8 @@ def SolveILP(programInput):
     # machine cannot be lower is if that time was already taken up by another job.
     model.Minimize(highestMachineNumber)
 
-    # Set time limit to 5 minutes
-    solver.parameters.max_time_in_seconds = 5
+    # Set time limit to 30 minutes
+    solver.parameters.max_time_in_seconds = 1800
 
     # Solve the model and print the solution
     status = solver.Solve(model)

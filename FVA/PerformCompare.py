@@ -7,8 +7,15 @@ import sys
 import os
 from time import perf_counter
 import multiprocessing as mp
-import numpy as np
 import pandas as pd
+import re
+
+# This function is from: https://stackoverflow.com/questions/4813061/non-alphanumeric-list-order-from-os-listdir
+# Sorting based on alphabetical and numerical values
+def sorted_alphanumeric(data):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(data, key=alphanum_key)
 
 def evaluateFileOld(programInput, avgTime, result):
     evaluateFile(offlineOld, programInput, avgTime, result)
@@ -37,16 +44,12 @@ def evaluateFile(module, programInput, avgTime, result):
     avgTime.value = sum(times) / len(times)
 
 if __name__ == "__main__":
-    #open and read the file after the appending:
-    f = open("tableOffline.txt", "r")
-    print(f.read())
+    filenames = sorted_alphanumeric(os.listdir("Offline"))
 
-    filenames = next(os.walk("Offline/"), (None, None, []))[2]  # [] if no file
-    rows = []
+    # Initialise the table
     df = pd.DataFrame()
 
     for file in filenames:
-        row = []
         print(f"==========={file}==========")
         oldIn = sys.stdin
         oldOut = sys.stdout
@@ -54,7 +57,6 @@ if __name__ == "__main__":
         if (file == "1000000.txt"):
             continue
 
-        row.append(file)
         # Start by reading and parsing the file
         fin = open(f"Offline/{file}", "r")
         sys.stdin = fin
@@ -66,8 +68,9 @@ if __name__ == "__main__":
         result = mp.Value("u", '?', lock=False)
         p=mp.Process(target = evaluateFileNew, args = (programInput, avgTime, result))
         p.start()
-
-        p.join(15)
+        
+        # Time limit for preprocessing of the data, set to 30 minutes
+        p.join(1800)
 
         print("New (CP-SAT) algorithm:")
         if p.is_alive():
@@ -86,7 +89,7 @@ if __name__ == "__main__":
         p=mp.Process(target = evaluateFileOld, args = (programInput, avgTime, result))
         p.start()
 
-        p.join(15)
+        p.join(1800)
 
         print("Old (ILP) algorithm:")
         if p.is_alive():

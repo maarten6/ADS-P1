@@ -212,8 +212,8 @@ def SolveILP(programInput):
     #please use the –verify_solution flag to gain confidence about the numerical stability of your solution.
     # [END objective]
 
-    # Set time limit to 5 minutes
-    solver.SetTimeLimit(5000)
+    # Set time limit to 30 minutes
+    solver.SetTimeLimit(1800)
 
     # Solve the problem and print the solution.
     # [START print_solution]
