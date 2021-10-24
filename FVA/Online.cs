@@ -10,7 +10,6 @@ namespace FVA
     public class Online
     {
         public int HospitalCNT { get => hospitals.Count; }
-        private int patientCNT = 0;
 
         private List<Hospital> hospitals;
 
@@ -23,6 +22,7 @@ namespace FVA
 
             Schedule(firstpatient, output);
 
+            int patientCNT = 0;
             for (string line = Console.ReadLine(); line != "x"; line = Console.ReadLine())
                 Schedule(new Patient(++patientCNT, line), output);
 
@@ -33,7 +33,6 @@ namespace FVA
         public Online(Configuration config)
         {
             hospitals = new List<Hospital>();
-            patientCNT = config.Patients.Count;
 
             StringBuilder output = new StringBuilder();
 
