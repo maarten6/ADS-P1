@@ -66,6 +66,8 @@ if __name__ == "__main__":
 
         avgTime = mp.Value("d", -1, lock=False)
         result = mp.Value("u", '?', lock=False)
+        avgTimeVarOld = mp.Value("d", -1, lock=False)
+        resultVarOld = mp.Value("u", '?', lock=False)
         p=mp.Process(target = evaluateFileNew, args = (programInput, avgTime, result))
         p.start()
         
@@ -86,7 +88,7 @@ if __name__ == "__main__":
             print(f"Avg: {avgNew}")
             CPSAT = round(avgNew,3)
 
-        p=mp.Process(target = evaluateFileOld, args = (programInput, avgTime, result))
+        p=mp.Process(target = evaluateFileOld, args = (programInput, avgTimeVarOld, resultVarOld))
         p.start()
 
         p.join(1800)
@@ -99,8 +101,8 @@ if __name__ == "__main__":
             resultOld = "?"
             LS = 'X'
         else:
-            avgOld = avgTime.value
-            resultOld = result.value
+            avgOld = avgTimeVarOld.value
+            resultOld = resultVarOld.value
             print(resultOld)
             print(f"Avg: {avgOld}")
             LS = round(avgOld,3)

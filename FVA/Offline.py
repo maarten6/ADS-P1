@@ -57,7 +57,7 @@ def parseInput():
 def SolveILP(programInput):
     if len(programInput.patients) == 0:
         print(0)
-        exit()
+        return "S"
     # [START solver]
     # Create the mip solver with the SCIP backend.
     solver = pywraplp.Solver.CreateSolver('SCIP')
@@ -213,7 +213,7 @@ def SolveILP(programInput):
     # [END objective]
 
     # Set time limit to 30 minutes
-    solver.SetTimeLimit(1800)
+    solver.SetTimeLimit(1800000)
 
     # Solve the problem and print the solution.
     # [START print_solution]

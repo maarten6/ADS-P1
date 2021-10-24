@@ -114,7 +114,7 @@ def parseInput():
 def SolveILP(programInput):
     if len(programInput.patients) == 0:
         print(0)
-        exit()
+        return "S"
         
     # Create the model and solver
     model = cp_model.CpModel()
