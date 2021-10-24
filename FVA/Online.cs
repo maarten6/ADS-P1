@@ -120,7 +120,7 @@ namespace FVA
             {
                 hospitals[ts1.Hospital].Schedule(patient.ID, ts1);
                 hospitals[ts2.Hospital].Schedule(patient.ID, ts2);
-                output.Append((ts1.StartTime + 1) + ", " + (ts1.Hospital + 1) + ", " + (ts2.StartTime + 1) + ", " + (ts2.Hospital + 1) + "\n");
+                output.Append($"{ ts1.StartTime + Utils.TIMEOFFSET}, { ts1.Hospital + Utils.TIMEOFFSET}, { ts2.StartTime + Utils.TIMEOFFSET}, { ts2.Hospital + Utils.TIMEOFFSET}\n");
             }
         }
 
