@@ -18,6 +18,20 @@ namespace FVA
             this.Patients = new List<Patient>();
         }
         public void AddPatient(Patient patient) => this.Patients.Add(patient);
+        public void AddFirstPatient(Patient patient) => this.Patients.Insert(0, patient);
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(Utils.PTIMEFIRST.ToString());
+            sb.AppendLine(Utils.PTIMESECOND.ToString());
+            sb.AppendLine(Utils.GAP.ToString());
+
+            foreach (Patient p in this.Patients)
+                sb.AppendLine(p.ToString());
+
+            return sb.ToString();
+        }
     }
 
     public class RandomConfiguration : Configuration

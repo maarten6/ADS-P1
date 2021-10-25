@@ -8,10 +8,10 @@ namespace FVA
     class Program
     {
         static bool
-            CONSOLEINPUT = true,
+            CONSOLEINPUT = false,
             RUNRANDOM = false,
             GENERATERANDOM = false,
-            FILEINPUT = false;
+            FILEINPUT = true;
                     
         static void Main(string[] args)
         {
@@ -25,7 +25,7 @@ namespace FVA
                     throw new ArgumentException("Input was not in the correct format.");
                 }
 
-                Utils.LONGESTSHOT = Math.Max(Utils.PTIMEFIRST, Utils.PTIMESECOND);
+                //Utils.LONGESTSHOT = Math.Max(Utils.PTIMEFIRST, Utils.PTIMESECOND);
 
                 string line = Console.ReadLine();
 
@@ -153,6 +153,35 @@ namespace FVA
                     sb.Append(results[i].ToString() + "\n");
 
                 FileHandler.WriteResults(sb.ToString());
+            }
+            else
+            {
+                // test a theory
+                int patientsfrom = 8,
+                    patientsto = patientsfrom + 0;
+                var sb = new StringBuilder();
+                Online online;
+
+                int firstshot = 3;
+                int secondshot = 2;
+                var conf = new Configuration(firstshot, secondshot, firstshot * (patientsto + 1));
+
+
+                for (int i = 1; i < patientsfrom; ++i)
+                {
+                    conf.AddFirstPatient(new Patient(i - 1, $"1, {i * firstshot}, 0, {secondshot}"));
+                    if (i % 50 == 0) Utils.Print($"Scheduled {i} patients.");
+                }
+                
+                for (int i = patientsfrom; i <= patientsto; ++i)
+                {
+                    conf.AddFirstPatient(new Patient(i - 1, $"1, {i * firstshot}, 0, {secondshot}"));
+                    online = new Online(conf);
+                    sb.AppendLine($"{i}: {online.HospitalCNT}");
+                }
+
+                FileHandler.WriteResults(sb.ToString());
+                FileHandler.WriteResults(conf.ToString());
             }
         }
     }
