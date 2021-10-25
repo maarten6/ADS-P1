@@ -248,9 +248,10 @@ namespace FVA
         {
             StringBuilder res = new StringBuilder();
             char[] alfabet = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_=+[]{};:'\",.<>/?|\\`~".ToCharArray();
-  
+
             foreach (int item in schedule)
                 if (item == 0) res.Append("-");
+                else if (item < alfabet.Length) res.Append(alfabet[item]);
                 else res.Append((char)item);
    
             return res.ToString();
