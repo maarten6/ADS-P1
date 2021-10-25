@@ -10,6 +10,7 @@ namespace FVA
     {
         public const bool DEBUG = true;
         public const bool TESTCASEZEROBASED = true;
+        public const int TIMEOFFSET = TESTCASEZEROBASED ? 0 : 1;
 
         public static Random PRNG = new Random(69);
 

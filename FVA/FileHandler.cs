@@ -24,7 +24,7 @@ namespace FVA
             StreamReader reader;
             try 
             { 
-                reader = new StreamReader(ROOT + filename + EXTENTION);
+                reader = new StreamReader(ROOT + filename + (filename.EndsWith('t') ? "" : EXTENTION));
             }
             catch (IOException e)
             {

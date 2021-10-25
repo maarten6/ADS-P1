@@ -8,9 +8,9 @@ namespace FVA
     class Program
     {
         static bool
-            CONSOLEINPUT = false,
+            CONSOLEINPUT = true,
             RUNRANDOM = false,
-            GENERATERANDOM = true,
+            GENERATERANDOM = false,
             FILEINPUT = false;
                     
         static void Main(string[] args)

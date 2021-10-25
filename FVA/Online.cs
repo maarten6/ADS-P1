@@ -247,8 +247,8 @@ namespace FVA
         public override string ToString()
         {
             StringBuilder res = new StringBuilder();
-            // char[] alfabet = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_=+[]{};:'\",.<>/?|\\`~".ToCharArray();
-                
+            char[] alfabet = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_=+[]{};:'\",.<>/?|\\`~".ToCharArray();
+  
             foreach (int item in schedule)
                 if (item == 0) res.Append("-");
                 else res.Append((char)item);
