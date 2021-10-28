@@ -175,6 +175,7 @@ def SolveILP(programInput):
     if status == cp_model.OPTIMAL:
         for patient in patientVariables:
             patient.printSolutionLine(solver)
+        print("Solution: \n")
         print(f"{solver.Value(highestMachineNumber)}")
         return f"{solver.Value(highestMachineNumber)}"
     else:
@@ -216,14 +217,13 @@ def runAllTests():
                 maxtime[0] = max(maxtime[0], patient.lastPossible[0])
                 mintime[1] = min(mintime[1], patient.firstPossible[1])
                 maxtime[1] = max(maxtime[1], patient.lastPossible[1])
-            print (file + " is file " + str(count) + " out of " + str(len(os.listdir())))    
+            print ("Run instance " + file + " (" + str(count) + "/" + str(len(os.listdir())) + ")")    
             if numPatients == 0:
                 print("0")
                 output.append((file,"0"))
                 print("\n")   
                           
             elif numPatients < 120:
-                print ("Solution of " + file + ":") 
                 solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))            
                 output.append((file,solution))  
                 print("\n")              
