@@ -25,7 +25,7 @@ if __name__ == "__main__":
     fd = open('output.txt', 'w+')
 
     sys.stdout = fd
-    programInput = offline.parseInput()
+    programInput = offline.parseInput(input())
     offline.SolveILP(programInput)
     fd.close()
     sys.stdout = oldOut
