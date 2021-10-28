@@ -219,13 +219,14 @@ def runAllTests():
             print (file + " is file " + str(count) + " out of " + str(len(os.listdir())))    
             if numPatients == 0:
                 print("0")
-                output.append((file,"0"))   
+                output.append((file,"0"))
+                print("\n")   
                           
-            elif numPatients < 40:
-                solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))
-                print ("Solution of " + file + ":")   
+            elif numPatients < 120:
+                print ("Solution of " + file + ":") 
+                solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))            
                 output.append((file,solution))  
-            print("\n")              
+                print("\n")              
     count = 0
     # iterate through all file
     for file in os.listdir():
