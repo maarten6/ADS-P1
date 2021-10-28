@@ -5,6 +5,7 @@ import pathlib
 """Offline algorithm of the Federal Vaccination Agency, to find the best schedule for vaccinating the population of a small country."""
 from ortools.sat.python import cp_model
 
+
 class Patient:
     def __init__(self, r, d, x, l, p1, p2, gap):
         self.r = r
@@ -26,7 +27,7 @@ class PatientVariables:
         # The timeslot on which to schedule dose 1
         self.starttimeDose1 = model.NewIntVar(patient.firstPossible[0], patient.lastPossible[0], "starttimeDose1")
         # The timeslot on which the first dose processing time has ended
-        self.endtimeDose1 = model.NewIntVar(patient.r, patient.d, "endtimeDose1")
+        self.endtimeDose1 = model.NewIntVar(patient.r + programInput.p1 - 1, patient.d, "endtimeDose1")
         # The interval from the starttime timeslot to the timeslot after the endtime. The reasoning for this is as follows:
         # Because we look at timeslots, and not a continous timeline, when p1 = 1, starttime==endtime. This means that the interval will
         # be empty, and thus when checking overlap with other intervals it won't find any. This is because when checking overlapping 
@@ -41,12 +42,11 @@ class PatientVariables:
         # The timeslot on which to schedule dose 2
         self.starttimeDose2 = model.NewIntVar(patient.firstPossible[1], patient.lastPossible[1], "starttimeDose2")
         # The timeslot on which the first dose processing time has ended
-        self.endtimeDose2 = model.NewIntVar(patient.firstPossible[1], patient.lastPossible[1] + programInput.p2, "endtimeDose2")
+        self.endtimeDose2 = model.NewIntVar(patient.firstPossible[1] + programInput.p2 - 1, patient.lastPossible[1] + programInput.p2 - 1, "endtimeDose2")
          # The interval from the starttime timeslot to the timeslot after the endtime.
         self.intervalDose2 = model.NewIntervalVar(self.starttimeDose2, programInput.p2, self.endtimeDose2 + 1, "intervalDose2")
 
         # The starttime for dose 2 must lay withing the feasible schedule, it must be greater than T1 + p1 + gap + x
-        # @zazey klopt deze grens nu of is het <= ??
         model.Add(self.endtimeDose1 + programInput.gap + patient.x < self.starttimeDose2)
         # To force the upper bound for the starttime, we restrict the endtime. It must be less than, or equal to T1 + p1 + gap + x + l.
         model.Add(self.endtimeDose2 <= self.endtimeDose1 + programInput.gap + patient.x + patient.l)
@@ -73,7 +73,6 @@ class PatientVariables:
 
 class ProgramInput:
     """All info read from input
-
     Attributes:
         p1            Processing time for first dose
         p2            Processing time for second dose
@@ -111,12 +110,14 @@ def parseInput(data):
         maxtime[0] = max(maxtime[0], patient.lastPossible[0])
         mintime[1] = min(mintime[1], patient.firstPossible[1])
         maxtime[1] = max(maxtime[1], patient.lastPossible[1])
-    if numPatients == 0:
-        print(0)
-        exit()
+    
     return ProgramInput(p1, p2, gap, patients, mintime, maxtime)
 
 def SolveILP(programInput):
+    if len(programInput.patients) == 0:
+        print(0)
+        return (0)
+        
     # Create the model and solver
     model = cp_model.CpModel()
     solver = cp_model.CpSolver()
@@ -152,7 +153,7 @@ def SolveILP(programInput):
     #  2            |-----|=====|-----|
     #  1      |-----------|-----------|
     # m\t     |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8
-    # This example shows p=2. We notice an overlap occurs when m=2 and t1=[2,4] and t2=[3,5]. Note: that the indices here indicate the start of a
+    # This example shows p=2. We notice an overlap occurs when m=2 and t1=[2,3+1] and t2=[3,4+1]. Note: that the indices here indicate the start of a
     # timeslot, and as the endtime spans a full timeslot, it will be set to the beginning of the next timeslot, but it won't overlap with that.
     model.AddNoOverlap2D(intervals, machineIntervals)
 
@@ -166,19 +167,21 @@ def SolveILP(programInput):
     # machine cannot be lower is if that time was already taken up by another job.
     model.Minimize(highestMachineNumber)
 
+    # Set time limit to 30 minutes
+    solver.parameters.max_time_in_seconds = 1800
+
     # Solve the model and print the solution
     status = solver.Solve(model)
-    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+    if status == cp_model.OPTIMAL:
         for patient in patientVariables:
             patient.printSolutionLine(solver)
         print(f"{solver.Value(highestMachineNumber)}")
         return f"{solver.Value(highestMachineNumber)}"
     else:
         print("Could not find a solution")
-        return "-1"
-
+        return "-"
     
-    
+    return "S"
 
 def runAllTests():
     dirhere = str(pathlib.Path(__file__).parent.resolve())
@@ -189,22 +192,12 @@ def runAllTests():
     os.chdir(path)
 
     # Read text File
-
-   
-    list = []
-    filenames = []
-    def read_text_file(path,file):
+    
+    output = []
+    
+    def read_text_file(path,file, count):
         with open(f"{path}{file}", 'r') as f:
             inputlist = f.read().splitlines()
-            
-                  
-
-            # print("LIST STARTS HERE-=-------------------------------------------------------------------")
-            # for x in range(len(inputlist)):
-            #     print (inputlist[x])
-
-            # print("LIST ENDS HERE-=-------------------------------------------------------------------")
-
             p1 = int(inputlist[0])
             p2 = int(inputlist[1])
             gap = int(inputlist[2])
@@ -213,6 +206,7 @@ def runAllTests():
             maxtime = [0] * 2
             mintime = [float('inf')] * 2 # Initiate minimum times as infinity
 
+
             for i in range(0, numPatients):
                 patient = parsePatient(inputlist[4 + i], p1, p2, gap)
                 patients.append(patient)
@@ -220,38 +214,29 @@ def runAllTests():
                 maxtime[0] = max(maxtime[0], patient.lastPossible[0])
                 mintime[1] = min(mintime[1], patient.firstPossible[1])
                 maxtime[1] = max(maxtime[1], patient.lastPossible[1])
-                
+            print (file + " is file " + str(count) + " out of " + str(len(os.listdir())))    
             if numPatients == 0:
-                print(0)
-                #exit()
-                
-            print ("SOLUTION BELOW-------------------------------------------------------------------------")
-            if numPatients < 120:
+                print("0")
+                output.append((file,"0"))   
+                          
+            elif numPatients < 70:
                 solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))
-                print(solution)
-                
-                list.append((file,solution))    
-            
-
-    
-
+                print ("Solution of " + file + ":")   
+                output.append((file,solution))  
+            print("\n")              
+    x = 0
     # iterate through all file
     for file in os.listdir():
         # Check whether file is in text format or not
-        if file.endswith(".txt"):
-            
-            
+        if file.endswith(".txt"): 
+            x += 1
             # call read text file function
-            read_text_file(path,file)
+            read_text_file(path,file, x)
     
     f = open("output.txt", "w")
-    for i in list:
-        print(i[0]+ ' ' + i[1])
-        f.write(i[0]+ " " + i[1] + "\n")
-
-    #print(list, ' ')
-
-            
+    for i in output:
+        print(i[0] + ' ' + i[1])
+        f.write(i[0] + " " + i[1] + "\n")
 
 if __name__ == "__main__":
     data = input()
