@@ -197,6 +197,8 @@ def runAllTests():
     
     def read_text_file(path,file, count):
         with open(f"{path}{file}", 'r') as f:
+            if("output" in file):
+                return
             inputlist = f.read().splitlines()
             p1 = int(inputlist[0])
             p2 = int(inputlist[1])
@@ -219,21 +221,22 @@ def runAllTests():
                 print("0")
                 output.append((file,"0"))   
                           
-            elif numPatients < 70:
+            elif numPatients < 40:
                 solution = SolveILP(ProgramInput(p1, p2, gap, patients, mintime, maxtime))
                 print ("Solution of " + file + ":")   
                 output.append((file,solution))  
             print("\n")              
-    x = 0
+    count = 0
     # iterate through all file
     for file in os.listdir():
         # Check whether file is in text format or not
         if file.endswith(".txt"): 
-            x += 1
+            count += 1
             # call read text file function
-            read_text_file(path,file, x)
-    
-    f = open("output.txt", "w")
+            
+            read_text_file(path, file, count)
+
+    f = open(("output.txt"), "w")
     for i in output:
         print(i[0] + ' ' + i[1])
         f.write(i[0] + " " + i[1] + "\n")
