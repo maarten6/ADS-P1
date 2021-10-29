@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Input generator for Offline.py, the program by the Federal Vaccination Agency to schedule vaccinations."""
+"""Input generator for OfflineCPSAT.py and OfflineLS.py, the programs by the Federal Vaccination Agency to schedule vaccinations."""
 import sys
 import os
 import random
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     else:
         pMulti = 1
 
-    fd = open('input.txt', 'w')
+    fd = open("input.txt", "w")
 
     gapSize = random.randint(0, 20)
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             l = p2 * pMulti
 
         if generatorMode == InputType.ForceMachineMax:
-            # Check if the generated r,d,x,l fall within specification (i.e. don't exceed set maximum machine count)
+            # Check if the generated r,d,x,l fall within specification (i.e. don"t exceed set maximum machine count)
             mayPlace = False
             while not mayPlace:
                 mayPlace = True

@@ -27,9 +27,9 @@ class PatientVariables:
         self.endtimeDose1 = model.NewIntVar(patient.r + programInput.p1 - 1, patient.d, "endtimeDose1")
         # The interval from the starttime timeslot to the timeslot after the endtime. The reasoning for this is as follows:
         # Because we look at timeslots, and not a continous timeline, when p1 = 1, starttime==endtime. This means that the interval will
-        # be empty, and thus when checking overlap with other intervals it won't find any. This is because when checking overlapping 
-        # intervals, the bounds are not seen as a match (e.g. [0,3] and [3,5] don't overlap). This quirk also allows us to add this +1,
-        # as it won't be seen in the final overlap anyway.
+        # be empty, and thus when checking overlap with other intervals it won"t find any. This is because when checking overlapping 
+        # intervals, the bounds are not seen as a match (e.g. [0,3] and [3,5] don"t overlap). This quirk also allows us to add this +1,
+        # as it won"t be seen in the final overlap anyway.
         # Another way to see this is as viewing the numbers in the interval as "the start of a timeslot". In this case, a patient would
         # be in the hospital from the start of timeslot a, until (just before the start of) timeslot a + p1.
         self.intervalDose1 = model.NewIntervalVar(self.starttimeDose1, programInput.p1, self.endtimeDose1 + 1, "intervalDose1")
@@ -55,7 +55,7 @@ class PatientVariables:
         self.machineDose2 = model.NewIntVar(1, len(programInput.patients), "machineDose2")
 
         # Create an interval from machineNumber to machineNumber + 1. This will be used in a 2D overlap, to make sure that a 
-        # machine isn't booked by two patients on the same timeslot. Note we have to use + 1 for the same reason as intervalDose1.
+        # machine isn"t booked by two patients on the same timeslot. Note we have to use + 1 for the same reason as intervalDose1.
         self.machineDose1Interval = model.NewIntervalVar(self.machineDose1, 1, self.machineDose1 + 1, "machineDose1Interval")
         self.machineDose2Interval = model.NewIntervalVar(self.machineDose2, 1, self.machineDose2 + 1, "machineDose2Interval")
 
@@ -89,7 +89,7 @@ class ProgramInput:
 
 def parsePatient(line, p1, p2, gap):
     """Turns a comma seperated line into a patient object given the input-wide p1, p2 and gap."""
-    patientValues = [int(x.strip()) for x in line.split(',')]
+    patientValues = [int(x.strip()) for x in line.split(",")]
     return Patient(patientValues[0], patientValues[1], patientValues[2], patientValues[3], p1, p2, gap)
 
 def parseInput():
@@ -100,7 +100,7 @@ def parseInput():
     numPatients = int(input())
     patients = []
     maxtime = [0] * 2
-    mintime = [float('inf')] * 2 # Initiate minimum times as infinity
+    mintime = [float("inf")] * 2 # Initiate minimum times as infinity
     for i in range(0, numPatients):
         patient = parsePatient(input(), p1, p2, gap)
         patients.append(patient)
@@ -152,7 +152,7 @@ def SolveILP(programInput):
     #  1      |-----------|-----------|
     # m\t     |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8
     # This example shows p=2. We notice an overlap occurs when m=2 and t1=[2,3+1] and t2=[3,4+1]. Note: that the indices here indicate the start of a
-    # timeslot, and as the endtime spans a full timeslot, it will be set to the beginning of the next timeslot, but it won't overlap with that.
+    # timeslot, and as the endtime spans a full timeslot, it will be set to the beginning of the next timeslot, but it won"t overlap with that.
     model.AddNoOverlap2D(intervals, machineIntervals)
 
     # Create a variable that holds the highest machine number that was found, we will minimise this later

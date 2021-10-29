@@ -33,7 +33,7 @@ class ProgramInput:
 
 def parsePatient(line, p1, p2, gap):
     """Turns a comma seperated line into a patient object given the input-wide p1, p2 and gap."""
-    patientValues = [int(x.strip()) for x in line.split(',')]
+    patientValues = [int(x.strip()) for x in line.split(",")]
     return Patient(patientValues[0], patientValues[1], patientValues[2], patientValues[3], p1, p2, gap)
 
 def parseInput():
@@ -44,7 +44,7 @@ def parseInput():
     numPatients = int(input())
     patients = []
     maxtime = [0] * 2
-    mintime = [float('inf')] * 2 # Initiate minimum times as infinity
+    mintime = [float("inf")] * 2 # Initiate minimum times as infinity
     for i in range(0, numPatients):
         patient = parsePatient(input(), p1, p2, gap)
         patients.append(patient)
@@ -59,7 +59,7 @@ def SolveILP(programInput):
         print(0)
         return "S"
     # Create the mip solver with the SCIP backend.
-    solver = pywraplp.Solver.CreateSolver('SCIP')
+    solver = pywraplp.Solver.CreateSolver("SCIP")
 
     # Basic variables
     patients = programInput.patients
@@ -79,7 +79,7 @@ def SolveILP(programInput):
     # M    : Maximal number of concurrent machines over all timeslots
 
     # M: total number of machines
-    M = solver.IntVar(0, len(patients), 'M')
+    M = solver.IntVar(0, len(patients), "M")
 
     # Initialise arrays that holds variables of dose 1 and dose 2
     dose1 = [None] * len(patients) #Holds all y variables
@@ -104,8 +104,8 @@ def SolveILP(programInput):
         patient = patients[job]
         constraintOneDose1 = solver.Constraint(1, 1) # Constrain SUM y_jtm to equal 1
         constraintOneDose2 = solver.Constraint(1, 1) # Constrain SUM y_jtm to equal 1
-        machineDose1 = solver.IntVar(1, highestMachineNumber, f'm_1(job:{job})')
-        machineDose2 = solver.IntVar(1, highestMachineNumber, f'm_2(job:{job})')
+        machineDose1 = solver.IntVar(1, highestMachineNumber, f"m_1(job:{job})")
+        machineDose2 = solver.IntVar(1, highestMachineNumber, f"m_2(job:{job})")
         m[0][job] = machineDose1
         m[1][job] = machineDose2
         constraintMachineDose1MinSum = solver.Constraint(0, 0)
@@ -125,7 +125,7 @@ def SolveILP(programInput):
         for machine in range(1, machineUpperBound):
             # Setting up all yjtm variables
             for timeslot in range (0, numTimeslotsDose1):
-                yj = solver.IntVar(0, 1, f'y(job:{job}, time:{programInput.mintime[0] + timeslot})')
+                yj = solver.IntVar(0, 1, f"y(job:{job}, time:{programInput.mintime[0] + timeslot})")
                 dose1[job][timeslot][machine] = yj
                 currentTime = timeslot + programInput.mintime[0]
                 # Current time is either before or after shots can be taken: set yj to always 0
@@ -137,7 +137,7 @@ def SolveILP(programInput):
             # Set up the zjm variables
             for timeslot in range (0, numTimeslotsDose2):
                 currentTime = timeslot + programInput.mintime[1]
-                zj = solver.IntVar(0, 1, f'z(job:{job}, time:{currentTime})')
+                zj = solver.IntVar(0, 1, f"z(job:{job}, time:{currentTime})")
                 dose2[job][timeslot][machine] = zj
                 
                 # Current time is either before or after shots can be taken: set zj to always 0
@@ -148,7 +148,7 @@ def SolveILP(programInput):
 
         # T: Time that first dose is taken
         # T = SUM yjm*t   =>   T - SUM yjm*t = 0
-        T = solver.IntVar(patient.firstPossible[0], patient.lastPossible[0], f'T(job:{job})')
+        T = solver.IntVar(patient.firstPossible[0], patient.lastPossible[0], f"T(job:{job})")
         Ts[job] = T
         constraintTMinSum = solver.Constraint(0, 0)
         constraintTMinSum.SetCoefficient(T, 1)
@@ -159,7 +159,7 @@ def SolveILP(programInput):
             
         # S: Time that second dose is taken
         # S = SUM zjm*t   =>   S - SUM zjm*t = 0
-        S = solver.IntVar(programInput.mintime[1], programInput.maxtime[1], f'S(job:{job})')
+        S = solver.IntVar(programInput.mintime[1], programInput.maxtime[1], f"S(job:{job})")
         Ses[job] = S
         constraintSMinSum = solver.Constraint(0, 0)
         constraintSMinSum.SetCoefficient(S, 1)
