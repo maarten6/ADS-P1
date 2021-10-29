@@ -10,11 +10,11 @@ namespace FVA
         // These are different modes the program can run. The program can only run one mode at the time
         static bool
             // the functionality the program is expected to have
-            CONSOLEINPUT = true,
+            CONSOLEINPUT = false,
             // running a randomly generated problem
             RUNRANDOM = false,
             // generating random problems and writing them to text files for both online and offline
-            GENERATERANDOM = false,
+            GENERATERANDOM = true,
             // run cases ran by the offline algo, compare the results and write them to a text file
             FILEINPUT = false;
                     
