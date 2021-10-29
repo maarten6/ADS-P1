@@ -160,31 +160,32 @@ namespace FVA
             else
             {
                 // test a theory
-                int patientsfrom = 8,
-                    patientsto = patientsfrom + 0;
+                int amountofpatient = 10,
+                    patientsfrom = 10,
+                    patientsto = patientsfrom + amountofpatient;
                 var sb = new StringBuilder();
                 Online online;
 
                 int firstshot = 3;
                 int secondshot = 2;
-                var conf = new Configuration(firstshot, secondshot, firstshot * (patientsto + 1));
+                var conf = new Configuration(firstshot, secondshot, firstshot * patientsto);
 
 
                 for (int i = 1; i < patientsfrom; ++i)
-                {
                     conf.AddFirstPatient(new Patient(i - 1, $"1, {i * firstshot}, 0, {secondshot}"));
-                    if (i % 50 == 0) Utils.Print($"Scheduled {i} patients.");
-                }
                 
-                for (int i = patientsfrom; i <= patientsto; ++i)
+                
+                for (int i = patientsfrom; i < patientsto; ++i)
                 {
                     conf.AddFirstPatient(new Patient(i - 1, $"1, {i * firstshot}, 0, {secondshot}"));
                     online = new Online(conf);
                     sb.AppendLine($"{i}: {online.HospitalCNT}");
                 }
 
+                // write the results to a file
                 FileHandler.WriteResults(sb.ToString());
-                FileHandler.WriteResults(conf.ToString());
+                // write the test to file
+                //FileHandler.WriteResults(conf.ToString()); 
             }
         }
     }
