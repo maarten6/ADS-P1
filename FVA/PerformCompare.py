@@ -72,7 +72,7 @@ if __name__ == "__main__":
         p.start()
         
         # Time limit for preprocessing of the data, set to 30 minutes
-        p.join(1800)
+        p.join(60)
 
         print("New (CP-SAT) algorithm:")
         if p.is_alive():
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         p=mp.Process(target = evaluateFileOld, args = (programInput, avgTimeVarOld, resultVarOld))
         p.start()
 
-        p.join(1800)
+        p.join(60)
 
         print("Old (ILP) algorithm:")
         if p.is_alive():
