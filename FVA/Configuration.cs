@@ -110,7 +110,7 @@ namespace FVA
         public void SetOnlineResult(Online online)
         {
             this.OnlineScore = online.HospitalCNT;
-            this.compratio = this.OfflineScore / this.OnlineScore;
+            this.compratio = this.OnlineScore == 0 ? 0 : (this.OfflineScore / this.OnlineScore);
         }
 
         public int CompareTo(object obj)

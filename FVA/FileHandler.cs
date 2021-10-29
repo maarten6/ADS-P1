@@ -9,20 +9,20 @@ namespace FVA
 {
     static class FileHandler
     {
-        private static string ROOT = "../../../testcases/";
+        private static string ROOT = $"../../../../TestInstances/Online/";
         public const string
             EXTENTION = ".txt",
-            INPUTLOCATION = "INPUT",
-            OUTPUTLOCATION = "OUTPUT";
+            INPUTLOCATION = "AutoRun/INPUT",
+            OUTPUTLOCATION = "AutoRun/OUTPUT";
 
         private static void WriteToFile(string path, string result) => File.WriteAllText(ROOT + path + EXTENTION, result);
         public static void WriteResults(string results) => WriteToFile(OUTPUTLOCATION, results);
-        public static void WriteTestCase(bool online, string name, string testcase) => WriteToFile("generated/" + (online ? "online/" : "offline/") + name, testcase);
+        public static void WriteTestCase(bool online, string name, string testcase) => WriteToFile("../Generated/" + (online ? "Online/" : "Offline/") + name, testcase);
 
         public static IEnumerable<string> ReadLines(string filename)
         {
             StreamReader reader;
-            try 
+            try
             { 
                 reader = new StreamReader(ROOT + filename + (filename.EndsWith('t') ? "" : EXTENTION));
             }

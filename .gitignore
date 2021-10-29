@@ -351,8 +351,9 @@ MigrationBackup/
 
 **/.DS_Store
 
-**/FVA/output.txt
 
-**/FVA/Offline/1000000.txt
+**/OfflineAlgorithm/1000000.txt
+**/OfflineAlgorithm/tableOffline.txt
+**/OfflineAlgorithm/output.txt
+**/OfflineAlgorithm/input.txt
 **/FVA/Online
-**/FVA/tableOffline.txt

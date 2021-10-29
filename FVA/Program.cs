@@ -36,13 +36,7 @@ namespace FVA
 
                 if (Utils.OFFLINE)
                 {
-                    Utils.DebugPrint($"Solving the offline problem with {patientCnt} patients.");
-                    Patient[] patients = new Patient[patientCnt];
-
-                    for (int i = 0; i < patientCnt; ++i)
-                        patients[i] = new Patient(i, Console.ReadLine());
-
-                    new Offline(patients);
+                    Utils.DebugPrint($"Patient count of {patientCnt} was given, but this is the online problem solver.");
 
                 }
                 else
