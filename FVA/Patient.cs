@@ -45,5 +45,7 @@ namespace FVA
             this.Delay = delay;
             this.SecondDoseInterval = seconddoseinterval;
         }
+
+        public override string ToString() => $"{FirstDoseFrom + Utils.TIMEOFFSET}, {FirstDoseTo + Utils.TIMEOFFSET}, {Delay}, {SecondDoseInterval}";
     }
 }

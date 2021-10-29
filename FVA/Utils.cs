@@ -8,8 +8,9 @@ namespace FVA
 {
     public static class Utils
     {
-        public const bool DEBUG = true;
-        public const bool TESTCASEZEROBASED = true;
+        public const bool DEBUG = false;
+        public const bool TESTCASEZEROBASED = false;
+        public const int TIMEOFFSET = TESTCASEZEROBASED ? 0 : 1;
 
         public static Random PRNG = new Random(69);
 
@@ -20,7 +21,7 @@ namespace FVA
         // processing time of the second dose
         public static int PTIMESECOND;
         // maximum shotlength
-        public static int LONGESTSHOT;
+        public static int LONGESTSHOT { get { return Math.Max(PTIMEFIRST, PTIMESECOND); } }
         // gap between first and second dose
         public static int GAP;
 
@@ -30,6 +31,8 @@ namespace FVA
         {
             if (DEBUG || alwaysprint) Console.WriteLine(line);
         }
+
+        
 
     }
 }

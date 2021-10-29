@@ -15,7 +15,7 @@ namespace FVA
             patientCNT = patients.Length;
             this.patients = patients;
 
-            // do scheduling here
+            // we planned to do offline scheduling here, we decided to do this in Python later
         }
     }
 }
