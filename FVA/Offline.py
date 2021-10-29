@@ -58,20 +58,18 @@ def SolveILP(programInput):
     if len(programInput.patients) == 0:
         print(0)
         return "S"
-    # [START solver]
     # Create the mip solver with the SCIP backend.
     solver = pywraplp.Solver.CreateSolver('SCIP')
+
+    # Basic variables
     patients = programInput.patients
     machineUpperBound = len(patients) + 1
     highestMachineNumber = machineUpperBound - 1
-    # numTimeslots = programInput.maxtime[1] - programInput.mintime[0] + 1
     numTimeslotsDose1 = programInput.maxtime[0] - programInput.mintime[0] + 1
     numTimeslotsDose2 = programInput.maxtime[1] - programInput.mintime[1] + 1
 
 
-    # [END solver]
-
-    # [START variables] 
+    # [variables] 
     # y_jtm: 1, if the first dose of job j is taken on timeslot t on machine m
     #        0, otherwise
     # z_jtm: 1, if the second dose of job j is taken on timeslot t on machine m
@@ -99,7 +97,7 @@ def SolveILP(programInput):
             dose1[job][timeslot] = [None] * machineUpperBound
         for timeslot in range (0, numTimeslotsDose2):
             dose2[job][timeslot] = [None] * machineUpperBound
-    print(numTimeslotsDose1 + numTimeslotsDose2)
+
     constraintZero = solver.Constraint(0, 0) # Constraint for variables that should sum up to zero
     # Create ILP variables
     for job in range (0, len(patients)):
@@ -174,9 +172,7 @@ def SolveILP(programInput):
         constraintFeasibleScheduleS = solver.Constraint(programInput.p1 + programInput.gap + patient.x, programInput.p1 + programInput.gap + patient.x + patient.l - programInput.p2)
         constraintFeasibleScheduleS.SetCoefficient(S, 1)
         constraintFeasibleScheduleS.SetCoefficient(T, -1)
-    # [END variables]
 
-    # [START constraints]
     # FORALL t: SUM yjtm + SUM zjtm <= M
     # FORALL t: SUM yjtm + SUM zjtm - M <= 0
     for timeslot in range (programInput.mintime[0], programInput.maxtime[1] + 1):
@@ -203,20 +199,16 @@ def SolveILP(programInput):
                         constraintMaxOnePatient.SetCoefficient(dose2[job][index][machine], 1)
         constraint.SetCoefficient(M, -1)
 
-    # # [END constraints]
-
-    # [START objective]
     # Minimize M (number of machines)
     solver.Minimize(M)
-    #Note: the objective value may be slightly different than what you could compute yourself using MPVariable::solution_value(); 
-    #please use the –verify_solution flag to gain confidence about the numerical stability of your solution.
-    # [END objective]
+    # Note: the objective value may be slightly different than what you could compute yourself using MPVariable::solution_value(); 
+    # please use the –verify_solution flag to gain confidence about the numerical stability of your solution.
+    # For this reason, instead of reading objective.value, we the value of the variable itself read.
 
     # Set time limit to 30 minutes
     solver.SetTimeLimit(1800000)
 
     # Solve the problem and print the solution.
-    # [START print_solution]
     result = solver.Solve()
     if result is not solver.OPTIMAL:
         print("Could not find solution.")
@@ -234,8 +226,6 @@ def SolveILP(programInput):
 
     print(int(M.solution_value()))
     return "S"
-    # [END print_solution]
 
 if __name__ == "__main__":
     SolveILP(parseInput())
-# [END program]
