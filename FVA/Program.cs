@@ -7,11 +7,16 @@ namespace FVA
 {
     class Program
     {
+        // These are different modes the program can run. The program can only run one mode at the time
         static bool
-            CONSOLEINPUT = false,
+            // the functionality the program is expected to have
+            CONSOLEINPUT = true,
+            // running a randomly generated problem
             RUNRANDOM = false,
+            // generating random problems and writing them to text files for both online and offline
             GENERATERANDOM = false,
-            FILEINPUT = true;
+            // run cases ran by the offline algo, compare the results and write them to a text file
+            FILEINPUT = false;
                     
         static void Main(string[] args)
         {
@@ -24,8 +29,6 @@ namespace FVA
                 {
                     throw new ArgumentException("Input was not in the correct format.");
                 }
-
-                //Utils.LONGESTSHOT = Math.Max(Utils.PTIMEFIRST, Utils.PTIMESECOND);
 
                 string line = Console.ReadLine();
 

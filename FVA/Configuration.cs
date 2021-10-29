@@ -94,7 +94,7 @@ namespace FVA
         public string FileName { get; private set; }
         public int OfflineScore { get; private set; }
         public int OnlineScore { get; private set; }
-        private int scoredelta;
+        private int compratio;
 
         public TestResult(string line)
         {
@@ -110,18 +110,18 @@ namespace FVA
         public void SetOnlineResult(Online online)
         {
             this.OnlineScore = online.HospitalCNT;
-            this.scoredelta = this.OnlineScore - this.OfflineScore;
+            this.compratio = this.OfflineScore / this.OnlineScore;
         }
 
         public int CompareTo(object obj)
         {
             if (obj is TestResult tc)
-                return -this.scoredelta.CompareTo(tc.scoredelta);
+                return -this.compratio.CompareTo(tc.compratio);
 
             throw new ArgumentException();
         }
 
-        public override string ToString() => $"{FileName}({scoredelta}): {OfflineScore} VS {OnlineScore}";
+        public override string ToString() => $"{FileName}({compratio}): {OfflineScore} VS {OnlineScore}";
     }
 
 }

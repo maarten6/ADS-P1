@@ -8,7 +8,7 @@ namespace FVA
 {
     public static class Utils
     {
-        public const bool DEBUG = true;
+        public const bool DEBUG = false;
         public const bool TESTCASEZEROBASED = false;
         public const int TIMEOFFSET = TESTCASEZEROBASED ? 0 : 1;
 
