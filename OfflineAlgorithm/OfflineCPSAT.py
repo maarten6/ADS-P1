@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-import os
-import pathlib
 
 """Offline algorithm of the Federal Vaccination Agency, to find the best schedule for vaccinating the population of a small country."""
 from ortools.sat.python import cp_model
-
 
 class Patient:
     def __init__(self, r, d, x, l, p1, p2, gap):
@@ -73,6 +70,7 @@ class PatientVariables:
 
 class ProgramInput:
     """All info read from input
+
     Attributes:
         p1            Processing time for first dose
         p2            Processing time for second dose
@@ -175,9 +173,7 @@ def SolveILP(programInput):
     if status == cp_model.OPTIMAL:
         for patient in patientVariables:
             patient.printSolutionLine(solver)
-        print("Solution:")
         print(f"{solver.Value(highestMachineNumber)}")
-        return f"{solver.Value(highestMachineNumber)}"
     else:
         print("Could not find a solution")
         return "-"
@@ -185,4 +181,4 @@ def SolveILP(programInput):
     return "S"
 
 if __name__ == "__main__":
-        SolveILP(parseInput())
+    SolveILP(parseInput())
