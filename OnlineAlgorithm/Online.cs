@@ -74,7 +74,7 @@ namespace FVA
             {
                 shot2List = new List<TimeSlot>();
                 int startShot2 = timeslot1.EndTime + GAP + patient.Delay;
-                int endShot2 = startShot2 + patient.SecondDoseInterval;
+                int endShot2 = startShot2 + patient.SecondDoseInterval - 1;
 
                 // get possibilities for the second jab
                 foreach (Hospital hospital in hospitals)
@@ -224,7 +224,7 @@ namespace FVA
             ExtendSchedule(shotend);
 
             int curlen = 0;
-            int maxShotLength = shotstart +  latestPatient + LONGESTSHOT;
+            int maxShotLength = shotstart +  latestPatient + LONGESTSHOT - 1;
             for (int currentslot = shotstart; currentslot <= shotend && currentslot <= maxShotLength; currentslot++)
             {
                 if (schedule[currentslot] != 0)
